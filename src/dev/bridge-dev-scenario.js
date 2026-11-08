@@ -87,7 +87,7 @@ export function createBridgeDevScenario() {
   return {
     tiles,
     objects,
-    nextObjectId: 26,
+    nextObjectId: 27,
     shaft: { x: 64, y: 64, w: 1, h: 1 },
     footprintTiles: TILE_LAYOUT.length,
     objectCount: OBJECT_LAYOUT.length,
