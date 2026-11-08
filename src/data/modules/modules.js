@@ -2,7 +2,7 @@ const base = {
   stats: {},
   attributes: {},
   requirements: {},
-  systems: {},
+  systems: { powerRoute: true },
   defaultMaterialFamily: 'titanium',
 };
 
