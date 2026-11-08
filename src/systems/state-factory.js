@@ -22,7 +22,7 @@ export function createInitialState({ mode = 'normal' } = {}) {
   };
   const gameConfig = createGameConfig(mode);
   const objects = devScenario?.objects ?? {};
-  const technicalDecks = createTechnicalDecks(tiles);
+  const technicalDecks = createTechnicalDecks(tiles, objects);
   const shaftCells = technicalDecks['Z+2']?.shaft ?? [];
   const state = {
     turn: 1,
