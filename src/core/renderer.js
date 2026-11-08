@@ -195,6 +195,9 @@ export function createRenderer(canvas, s) {
       } else if (o.type === 'MOD0014') {
         c.fillStyle = '#164d58';
         c.strokeStyle = selected ? '#8ee0a8' : '#62d9e7';
+      } else if (o.type === 'ENR0002' || o.type === 'FUR0002') {
+        c.fillStyle = '#665c43';
+        c.strokeStyle = selected ? '#8ee0a8' : '#e5c77e';
       } else {
         c.fillStyle = '#253744';
         c.strokeStyle = selected ? '#8ee0a8' : '#a6bdca';
