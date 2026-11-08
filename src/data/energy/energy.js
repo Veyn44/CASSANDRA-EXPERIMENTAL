@@ -33,9 +33,10 @@ export const ENERGY = [
     type: 'energy',
     w: 1,
     h: 1,
-    description: 'Interior electrical connector mounted beside a Titanium Hull Wall.',
+    description: 'Conductive overlay mounted directly on a Titanium Hull Wall. Requires 1 Titanium + 1 Aluminium.',
     function: 'External-to-internal electrical connection',
-    placement: 'titanium-wall-connector',
+    placement: 'wall-overlay',
+    constructionCost: { titanium: 1, aluminium: 1 },
   },
 ];
 
