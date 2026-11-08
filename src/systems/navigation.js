@@ -110,7 +110,8 @@ function isBlockedOnDeck(s, deckId, x, y) {
   const deck = s.technicalDecks?.[deckId];
   if (!deck) return true;
   if (shaftCells(s).has(k)) return false;
-  return !deck.tiles?.[k];
+  const tile = deck.tiles?.[k];
+  return !tile || tile.walkable === false;
 }
 function reconstructDeckPath(came, endKey) {
   const path = [];
