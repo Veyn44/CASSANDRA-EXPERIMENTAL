@@ -50,6 +50,7 @@ export function createInitialState({ mode = 'normal' } = {}) {
     hoverTile: null,
     activeDeck: 'Z0',
     technicalDecks,
+    technicalDeckObjects: Object.fromEntries(DECK_LEVELS.map((level) => [level, {}])),
     deckEnvironmentTags: { ...DECK_ENVIRONMENT_TAGS },
     accessShaft: {
       decks: Object.fromEntries(
