@@ -42,7 +42,12 @@ export function createCommandExecutor(s, refresh, note, objectAt, signal) {
     const obj = targetDeck === 'Z0' ? objectAt(p) : null;
     if (obj && !obj.built) {
       if (s.pawn.op < 1) { note('NOT ENOUGH AP · 1 AP REQUIRED'); return; }
-      if (!s.devMode && s.resources.titanium < 1) { note('INSUFFICIENT TITANIUM'); return; }
+      const item = getBuildable(obj.type),
+        cost = item?.constructionCost ?? { titanium: 1 },
+        missing = !s.devMode && !s.gameConfig.freeConstruction
+          ? Object.entries(cost).find(([resource, amount]) => (s.resources[resource] ?? 0) < amount)
+          : null;
+      if (missing) { note('INSUFFICIENT ' + missing[0].toUpperCase()); return; }
       const path = findWorkPath(s, obj.x, obj.y, obj.w, obj.h);
       if (!path) { note('NO ACCESSIBLE WORKING POSITION'); return; }
       note('MOVING TO MODULE BLUEPRINT');
