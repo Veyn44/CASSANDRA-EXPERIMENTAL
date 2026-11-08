@@ -111,6 +111,33 @@ export function validatePrefabPlacement(s, id, x, y, rotation = s.rotation) {
           if (!adjacentHull && !adjacentFrame)
             return { valid: false, message: 'EXTERNAL FRAME MUST TOUCH HULL OR ANOTHER FRAME' };
         }
+      } else if (item.placement === 'titanium-wall-connector') {
+        const wallDirections = [
+            [0, -1],
+            [1, 0],
+            [0, 1],
+            [-1, 0],
+          ],
+          direction = wallDirections[rotation % 4],
+          adjacentWall = s.map.tiles[tx + direction[0] + ',' + (ty + direction[1])];
+        if (!tile?.hull || tile.wall || tile.aluminiumWall)
+          return {
+            valid: false,
+            message: 'TITANIUM WALL CONNECTOR REQUIRES AN OPEN INTERIOR HULL TILE',
+          };
+        if (!adjacentWall?.wall || adjacentWall.aluminiumWall)
+          return {
+            valid: false,
+            message: 'TITANIUM WALL CONNECTOR MUST FACE A TITANIUM HULL WALL',
+          };
+        const detected = detectSections(s),
+          sectionId = detected.tileToSection[tx + ',' + ty],
+          section = sectionId ? detected.byId[sectionId] : null;
+        if (section?.atmosphere !== 'OPTIMAL')
+          return {
+            valid: false,
+            message: 'TITANIUM WALL CONNECTOR REQUIRES OPTIMAL ATMOSPHERE',
+          };
       } else if (item.placement === 'wall-mounted') {
         if (!tile?.hull || !tile?.wall)
           return { valid: false, message: 'WALL LIGHT REQUIRES A WALL TILE' };
@@ -151,6 +178,14 @@ export function placePrefab(s, id, x, y) {
     ...(item.id === 'MOD0014' ? { sectionName: 'SECTION' } : {}),
     ...(item.placement === 'wall-opening'
       ? { wallAttachment: findDoorWallAttachment(s.map.tiles, x, y, check.w, check.h) }
+      : {}),
+    ...(item.placement === 'titanium-wall-connector'
+      ? {
+          wallAttachment: {
+            x: x + [0, 1, 0, -1][s.rotation % 4],
+            y: y + [-1, 0, 1, 0][s.rotation % 4],
+          },
+        }
       : {}),
   };
   return {
