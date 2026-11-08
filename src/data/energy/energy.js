@@ -21,6 +21,7 @@ export const ENERGY = [
     description: 'Interior wall-mounted light fixture.',
     function: 'Interior lighting',
     placement: 'wall-mounted',
+    systems: { powerRoute: true },
   },
   {
     ...base,
@@ -37,6 +38,7 @@ export const ENERGY = [
     function: 'External-to-internal electrical connection',
     placement: 'wall-overlay',
     constructionCost: { titanium: 1, aluminium: 1 },
+    systems: { powerRoute: true },
   },
 ];
 
