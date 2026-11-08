@@ -62,3 +62,98 @@ Extend the existing Aluminium Wall role so that every module depends on an adjac
 ## Scope boundary
 
 This step covers only the Aluminium Wall module dependency, safe Aluminium Wall demolition, and the corresponding technical-deck tile synchronization described above. Other mechanics and future steps are intentionally not included here.
+
+---
+
+# STEP 2 — BASIC MODULES & FULL SHIP FUNCTIONALITY
+
+**Status: PLANNED — CHECKLIST APPROVED, DETAILS TO BE SPECIFIED**
+
+## Goal
+
+Complete the existing basic ship systems and integrate them into the turn simulation. Preserve already working systems and their established simplified game rules; extend or finish their missing gameplay behaviour rather than replacing them.
+
+## 2.1 Solar power, electrical distribution & batteries
+
+- [ ] Implement power output for the existing 2×3 Solar Panel.
+- [ ] Preserve the existing Aluminium Beam placement system for Solar Panels in vacuum.
+- [ ] Preserve the rule that Aluminium Beams do not consume the ship's tile capacity.
+- [ ] Implement electrical power distribution throughout the ship.
+- [ ] Define and implement the power consumption of individual modules.
+- [ ] Connect powered modules to the electrical network.
+- [ ] Implement battery capacity.
+- [ ] Implement battery charging and discharging.
+- [ ] Define and implement behaviour when generated and stored power is insufficient or unavailable.
+
+## 2.2 Atmosphere & environmental effects
+
+**Preserve the current simplified pressure, temperature and atmosphere model. Its rules are considered final for the game.**
+
+- [x] Closed-section detection and section separation.
+- [x] Atmosphere states: optimal, not optimal, and vacuum.
+- [x] Pressure decreases in stages according to the section's state.
+- [x] At cautious section state, temperature escapes according to how far the section is from vacuum.
+- [x] Control Panel shuts down when its section is in vacuum.
+- [x] In optimal / not optimal conditions, the Control Panel continues attempting to maintain the section state.
+- [ ] Implement gameplay effects of section conditions on pawns.
+- [ ] Implement gameplay effects of section conditions on modules and ship systems.
+- [ ] Verify interaction with power availability and Control Panel shutdown.
+
+Do not redesign the underlying atmosphere, pressure, temperature, or Control Panel model in this step. Implement the consequences of its existing state for the rest of the game.
+
+## 2.3 Lighting & Fog of War
+
+- [ ] Implement wall-light placement following the RimWorld Wall Light principle.
+- [ ] Implement valid wall placement rules for lights.
+- [ ] Implement light radius and illuminated area.
+- [ ] Connect lights to electrical power consumption.
+- [ ] Implement Fog of War on all relevant gameplay maps.
+- [ ] Hide areas that are neither illuminated nor within the player's flashlight range.
+- [ ] Implement visibility around the player using the flashlight.
+- [ ] Update visibility when the player moves, lights change, or power availability changes.
+
+## 2.4 Doors
+
+- [x] Existing door objects and placement.
+- [ ] Implement open / close interaction.
+- [ ] Account for door state in section detection.
+- [ ] Account for open doors when evaluating pressure and atmosphere.
+- [ ] Verify interaction between doors and pawn movement.
+
+## 2.5 EVA
+
+- [x] Basic EVA implementation exists.
+- [ ] Add gameplay properties to EVA.
+- [ ] Define conditions required to exit the ship.
+- [ ] Define EVA equipment properties and protection.
+- [ ] Connect EVA to pawn condition and survival.
+- [ ] Verify movement outside the ship and returning aboard.
+
+## 2.6 Turn simulation — system integration
+
+- [x] Basic NEXT TURN system exists.
+- [ ] Audit the current turn-resolution order.
+- [ ] Verify solar power generation.
+- [ ] Verify electrical distribution and module power consumption.
+- [ ] Verify battery charging and discharging.
+- [ ] Verify Control Panel behaviour.
+- [ ] Verify environmental effects on pawns and modules.
+- [ ] Verify doors, lights, and Fog of War during turn resolution.
+- [ ] Ensure systems update consistently and in a valid order.
+
+## 2.7 Basic ship integration test
+
+- [ ] New Game creates the basic ship with the correct modules and systems.
+- [ ] Solar Panels generate power.
+- [ ] Power is distributed and consumed by modules.
+- [ ] Batteries store surplus power and cover power shortages.
+- [ ] Control Panel responds to section conditions.
+- [ ] Pawns respond to unsuitable environmental conditions.
+- [ ] Lights and flashlight affect visibility.
+- [ ] Doors work as interactive objects.
+- [ ] EVA works as a gameplay mechanic.
+- [ ] NEXT TURN correctly resolves all integrated systems.
+
+## Scope boundary
+
+This step covers completion and integration of the existing basic ship systems listed above. The simplified pressure, temperature and atmosphere rules remain unchanged. Detailed mechanics and implementation requirements will be specified incrementally under their respective sections before implementation.
