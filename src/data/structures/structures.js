@@ -88,6 +88,7 @@ export const STRUCTURES = [
     airtight: false,
     integrityRange: [25, 100],
     defaultMaterialFamily: 'aluminium',
+    systems: { powerRoute: true },
   },
   {
     ...base,
@@ -105,6 +106,7 @@ export const STRUCTURES = [
     airtight: false,
     integrityRange: [25, 100],
     defaultMaterialFamily: 'aluminium',
+    systems: { powerRoute: true },
   },
 ];
 
