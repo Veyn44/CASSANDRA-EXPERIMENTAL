@@ -1,3 +1,5 @@
+import { getBuildable } from './prefab-manager.js';
+
 const key = (x, y) => x + ',' + y;
 
 export const TECHNICAL_DECK_LEVELS = ['Z+2', 'Z+1', 'Z-1', 'Z-2'];
@@ -8,10 +10,9 @@ export const DECK_ENVIRONMENT_TAGS = Object.freeze({
   'Z-1': 'INDESTRUCTIBLE',
   'Z-2': 'DESTRUCTIBLE',
 });
-export const DECK_LEVELS = ['Z+2', 'Z+1', 'Z0', 'Z-1', 'Z-2'];
 
-/** Build derived technical decks from the exact set of Z0 Hull tiles. */
-export function createTechnicalDecks(zeroLevelTiles) {
+/** Build derived technical decks from the Z0 Hull footprint and object registry. */
+export function createTechnicalDecks(zeroLevelTiles, objects = {}) {
   const footprint = Object.entries(zeroLevelTiles)
     .filter(([, tile]) => tile?.hull)
     .map(([position]) => position)
@@ -22,12 +23,22 @@ export function createTechnicalDecks(zeroLevelTiles) {
     });
   if (!footprint.length) return {};
 
-  // The access shaft is anchored to the geometric center of the left 128x128 canvas,
-  // independent of the current ship footprint or layout.
   const shaftX = 64;
   const shaftY = 64;
   const footprintSet = new Set(footprint);
   const shaft = footprintSet.has(key(shaftX, shaftY)) ? [{ x: shaftX, y: shaftY }] : [];
+
+  const powerRouteCells = new Set();
+  for (const [position, tile] of Object.entries(zeroLevelTiles)) {
+    if (tile?.aluminiumWall) powerRouteCells.add(position);
+  }
+  for (const object of Object.values(objects)) {
+    const item = getBuildable(object.type);
+    if (!item?.systems?.powerRoute) continue;
+    for (let y = object.y; y < object.y + object.h; y++)
+      for (let x = object.x; x < object.x + object.w; x++)
+        powerRouteCells.add(key(x, y));
+  }
 
   return Object.fromEntries(
     TECHNICAL_DECK_LEVELS.map((level) => {
@@ -35,13 +46,17 @@ export function createTechnicalDecks(zeroLevelTiles) {
       const tiles = {};
       for (const position of footprint) {
         if (shaftSet.has(position)) continue;
+        const isPowerRouteFloor = level === 'Z-1' && powerRouteCells.has(position);
         tiles[position] = {
-          type: 'SHIP_HULL',
+          type: isPowerRouteFloor ? 'SHIP_HULL_FLOOR' : 'HULL_TILE',
           material: 'SHIP_HULL',
           buildable: false,
           demolishable: false,
           repairable: false,
           undamageable: true,
+          integrity: null,
+          airtight: true,
+          walkable: isPowerRouteFloor,
         };
       }
       return [
@@ -61,10 +76,10 @@ export function createTechnicalDecks(zeroLevelTiles) {
 
 /**
  * Rebuild derived decks and keep their shared 1x1 shaft opening synchronized.
- * Existing manual and pressure locks are retained across Hull footprint edits.
+ * Recalculation is intentionally called from NEXT TURN, not construction actions.
  */
 export function syncTechnicalDecksState(state) {
-  state.technicalDecks = createTechnicalDecks(state.map.tiles);
+  state.technicalDecks = createTechnicalDecks(state.map.tiles, state.map.objects);
   const shaft = state.technicalDecks['Z+2']?.shaft ?? [];
   state.accessShaft.cells = shaft.map(({ x, y }) => ({ x, y }));
   state.accessShaft.w = 1;
@@ -74,7 +89,7 @@ export function syncTechnicalDecksState(state) {
     state.accessShaft.y = Math.min(...shaft.map(({ y }) => y));
   }
   state.accessShaft.decks ??= {};
-  for (const level of DECK_LEVELS)
+  for (const level of ['Z+2', 'Z+1', 'Z0', 'Z-1', 'Z-2'])
     state.accessShaft.decks[level] ??= { manualLock: false, autoLock: false, lockReason: null };
   return state.technicalDecks;
 }
