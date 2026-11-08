@@ -1,42 +1,59 @@
+import { getBuildable } from '../systems/prefab-manager.js';
+
 export function exportShipLayout(state, noteText) {
-  const sortedTiles = Object.entries(state.map.tiles)
+  const tiles = Object.entries(state.map.tiles ?? {})
     .map(([position, tile]) => {
       const [x, y] = position.split(',').map(Number);
-      return { x, y, tile };
+      const type = tile?.aluminiumWall
+        ? 'ALUMINIUM_WALL'
+        : tile?.wall
+          ? 'TITANIUM_HULL_WALL'
+          : tile?.hull
+            ? 'HULL_FLOOR'
+            : null;
+      return type ? { x, y, type } : null;
     })
-    .filter(({ tile }) => tile && (tile.hull || tile.wall || tile.aluminiumWall))
-    .sort((a, b) => a.y - b.y || a.x - b.x);
-  const point = ({ x, y }) => ({ x, y });
-  const hullFloor = sortedTiles.filter(({ tile }) => tile.hull).map(point);
-  const hullWalls = sortedTiles.filter(({ tile }) => tile.wall).map(point);
-  const aluminiumWalls = sortedTiles.filter(({ tile }) => tile.aluminiumWall).map(point);
+    .filter(Boolean)
+    .sort((a, b) => a.y - b.y || a.x - b.x || a.type.localeCompare(b.type));
+
   const objects = Object.values(state.map.objects ?? {})
     .map((object) => ({
       id: object.id,
-      type: object.type,
-      family: object.family ?? null,
+      typeId: object.type,
+      name: getBuildable(object.type)?.name ?? object.name ?? object.type,
       x: object.x,
       y: object.y,
-      w: object.w,
-      h: object.h,
+      width: object.w,
+      height: object.h,
       rotation: object.rotation ?? 0,
       built: object.built !== false,
-      materialFamily: object.materialFamily ?? null,
     }))
     .sort(
       (a, b) =>
         a.y - b.y ||
         a.x - b.x ||
-        String(a.type).localeCompare(String(b.type)) ||
+        String(a.typeId).localeCompare(String(b.typeId)) ||
         String(a.id).localeCompare(String(b.id))
     );
+
+  const shaft = state.accessShaft
+    ? {
+        x: state.accessShaft.x,
+        y: state.accessShaft.y,
+        width: state.accessShaft.w ?? 1,
+        height: state.accessShaft.h ?? 1,
+      }
+    : null;
+
   const layout = {
     format: 'cassandra-ship-layout',
-    version: 2,
+    version: 3,
     map: { width: state.map.width, height: state.map.height },
-    construction: { hullFloor, hullWalls, aluminiumWalls },
-    objects: objects,
+    tiles,
+    objects,
+    shaft,
   };
+
   const blob = new Blob([JSON.stringify(layout, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -46,14 +63,19 @@ export function exportShipLayout(state, noteText) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+
+  const tileCounts = tiles.reduce((counts, tile) => {
+    counts[tile.type] = (counts[tile.type] ?? 0) + 1;
+    return counts;
+  }, {});
   noteText(
     'SHIP LAYOUT EXPORTED · ' +
-      hullFloor.length +
-      ' HULL · ' +
-      hullWalls.length +
-      ' HULL WALLS · ' +
-      aluminiumWalls.length +
-      ' ALUMINIUM WALLS · ' +
+      (tileCounts.HULL_FLOOR ?? 0) +
+      ' FLOOR · ' +
+      (tileCounts.TITANIUM_HULL_WALL ?? 0) +
+      ' TITANIUM WALL · ' +
+      (tileCounts.ALUMINIUM_WALL ?? 0) +
+      ' ALUMINIUM WALL · ' +
       objects.length +
       ' OBJECTS'
   );
