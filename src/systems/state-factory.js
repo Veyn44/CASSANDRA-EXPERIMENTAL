@@ -47,7 +47,7 @@ export function createInitialState({ mode = 'normal' } = {}) {
       local: { scope: 'ONE_SECTION', worksIndependently: true },
     },
     devMode: gameConfig.unlimitedResources,
-    resources: { titanium: 100, water: 20, ice: 0, oxygen: 100, hydrogen: 20 },
+    resources: { titanium: 100, aluminium: 0, water: 20, ice: 0, oxygen: 100, hydrogen: 20 },
     activeTool: null,
     selectedPrefab: null,
     selectedObject: null,
