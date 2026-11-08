@@ -23,7 +23,7 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
       }
     }
     const id = deckId + '-SECTION-' + String(sections.length + 1).padStart(2, '0');
-    const section = { id, name: 'SECTION ' + String(sections.length + 1).padStart(2, '0'), tiles: cells, tileCount: cells.length, panels: [] };
+    const section = { id, name: 'SECTION ' + String(sections.length + 1).padStart(2, '0'), tiles: cells, tileCount: cells.length, panels: [], hasActivePanel: false, stability: 'UNSTABILIZED', environment: 'UNMANAGED', atmosphere: 'NOT SIMULATED', pressure: 'NOT SIMULATED', temperature: null };
     sections.push(section); byId[id] = section;
     for (const point of cells) tileToSection[key(point.x, point.y)] = id;
   }
@@ -33,7 +33,10 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
     if (object.type !== 'MOD0014') continue;
     const sectionId = tileToSection[key(object.x, object.y)] ?? null;
     const section = sectionId ? byId[sectionId] : null;
-    if (section && object.built !== false) section.panels.push(object);
+    if (section && object.built !== false) {
+      section.panels.push(object);
+      if (object.sectionName) section.name = object.sectionName;
+    }
     panels.push({
       id: object.id, name: object.sectionName ?? section?.name ?? 'UNASSIGNED',
       x: object.x, y: object.y, sectionId,
@@ -41,6 +44,14 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
       status: object.built === false ? 'BLUEPRINT' : !section ? 'INACTIVE' : section.tileCount > 64 ? 'INACTIVE' : section.panels[0] !== object ? 'INACTIVE' : 'ACTIVE',
       reason: object.built === false ? 'NOT BUILT' : !section ? 'NO POWER ROUTE' : section.tileCount > 64 ? 'CAPACITY EXCEEDED' : section.panels[0] !== object ? 'DUPLICATE PANEL' : '',
     });
+  }
+  for (const section of sections) {
+    const activePanel = panels.find((panel) => panel.sectionId === section.id && panel.active);
+    section.hasActivePanel = Boolean(activePanel);
+    section.activePanelId = activePanel?.id ?? null;
+    section.stability = activePanel ? 'STABLE' : 'UNSTABILIZED';
+    section.environment = activePanel ? 'CONTROLLED' : 'UNMANAGED';
+    // Atmosphere, pressure and temperature are deliberately not simulated on technical decks yet.
   }
   return { sections, byId, tileToSection, panels };
 }
