@@ -65,7 +65,7 @@ export function validatePrefabPlacement(s, id, x, y, rotation = s.rotation) {
       if (tx < 0 || ty < 0 || tx >= (technicalDeck ? s.map.width : 128) || ty >= s.map.height)
         return {
           valid: false,
-          message: tx >= 128 ? 'SHIP CONSTRUCTION IS LIMITED TO THE LEFT SECTOR' : 'OUT OF MAP',
+          message: !technicalDeck && tx >= 128 ? 'SHIP CONSTRUCTION IS LIMITED TO THE LEFT SECTOR' : 'OUT OF MAP',
         };
       const tile = technicalDeck ? deck?.tiles?.[k] : s.map.tiles[k];
       const occupyingObjects = objects.filter(
