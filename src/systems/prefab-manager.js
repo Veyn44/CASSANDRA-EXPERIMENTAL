@@ -1,4 +1,5 @@
 import { detectSections } from './section-manager.js';
+import { detectTechnicalDeckSections } from './technical-deck-sections.js';
 import { MODULES, getModule } from '../data/modules/modules.js';
 import { STRUCTURES, getStructure } from '../data/structures/structures.js';
 import { ENERGY, getEnergy } from '../data/energy/energy.js';
@@ -45,28 +46,46 @@ function findDoorWallAttachment(tiles, x, y, w, h) {
   });
 }
 
+export function getActiveDeckObjects(s, deckId = s.activeDeck) {
+  return deckId === 'Z0' ? s.map.objects : (s.technicalDeckObjects?.[deckId] ?? {});
+}
+
 export function validatePrefabPlacement(s, id, x, y, rotation = s.rotation) {
   const item = getBuildable(id);
   if (!item) return { valid: false, message: 'UNKNOWN BUILD ITEM' };
   const { w, h } = prefabSize(item, rotation);
-  const objects = Object.values(s.map.objects);
+  const technicalDeck = s.activeDeck !== 'Z0';
+  const deck = technicalDeck ? s.technicalDecks?.[s.activeDeck] : null;
+  const objects = Object.values(getActiveDeckObjects(s));
   for (let yy = 0; yy < h; yy++)
     for (let xx = 0; xx < w; xx++) {
       const tx = x + xx,
         ty = y + yy,
         k = tx + ',' + ty;
-      if (tx < 0 || ty < 0 || tx >= 128 || ty >= s.map.height)
+      if (tx < 0 || ty < 0 || tx >= (technicalDeck ? s.map.width : 128) || ty >= s.map.height)
         return {
           valid: false,
-          message: tx >= 128 ? 'SHIP CONSTRUCTION IS LIMITED TO THE LEFT SECTOR' : 'OUT OF MAP',
+          message: !technicalDeck && tx >= 128 ? 'SHIP CONSTRUCTION IS LIMITED TO THE LEFT SECTOR' : 'OUT OF MAP',
         };
-      const tile = s.map.tiles[k];
+      const tile = technicalDeck ? deck?.tiles?.[k] : s.map.tiles[k];
       const occupyingObjects = objects.filter(
         (o) => tx >= o.x && ty >= o.y && tx < o.x + o.w && ty < o.y + o.h
       );
       if (occupyingObjects.some((o) => !(item.outer && o.type === 'STR0001')))
         return { valid: false, message: 'TILE BLOCKED' };
-      if (item.placement === 'control-panel') {
+      if (technicalDeck && item.id !== 'MOD0014')
+        return { valid: false, message: 'ONLY CONTROL PANELS CAN BE INSTALLED ON TECHNICAL DECKS' };
+      if (item.placement === 'control-panel' && technicalDeck) {
+        if (w !== 1 || h !== 1 || tile?.walkable !== true)
+          return { valid: false, message: 'CONTROL PANEL REQUIRES A POWERED SERVICE FLOOR' };
+        const detected = detectTechnicalDeckSections(s, s.activeDeck);
+        const sectionId = detected.tileToSection[k];
+        if (!sectionId) return { valid: false, message: 'CONTROL PANEL REQUIRES A CONNECTED POWER ROUTE' };
+        if (detected.byId[sectionId]?.tileCount > 64)
+          return { valid: false, message: 'SECTION EXCEEDS CONTROL PANEL CAPACITY · MAX 64 FLOOR TILES' };
+        if (objects.some((o) => o.type === 'MOD0014' && detected.tileToSection[o.x + ',' + o.y] === sectionId))
+          return { valid: false, message: 'THIS SECTION ALREADY HAS A CONTROL PANEL' };
+      } else if (item.placement === 'control-panel') {
         const panelDirections = [
             [0, -1],
             [1, 0],
@@ -144,7 +163,9 @@ export function placePrefab(s, id, x, y) {
   if (!check.valid) return { message: check.message };
   const idValue = 'build-' + s.nextObjectId++;
   const built = Boolean(s.devCreator);
-  s.map.objects[idValue] = {
+  const targetObjects = getActiveDeckObjects(s);
+  if (s.activeDeck !== 'Z0') s.technicalDeckObjects[s.activeDeck] = targetObjects;
+  targetObjects[idValue] = {
     id: idValue,
     type: item.id,
     family: item.id.slice(0, 3),
@@ -157,10 +178,10 @@ export function placePrefab(s, id, x, y) {
     materialFamily: item.defaultMaterialFamily ?? 'titanium',
     integrity: 100,
     ...(item.id === 'MOD0014' ? { sectionName: 'SECTION' } : {}),
-    ...(item.placement === 'wall-opening'
+    ...(s.activeDeck === 'Z0' && item.placement === 'wall-opening'
       ? { wallAttachment: findDoorWallAttachment(s.map.tiles, x, y, check.w, check.h) }
       : {}),
-    ...(item.placement === 'wall-overlay'
+    ...(s.activeDeck === 'Z0' && item.placement === 'wall-overlay'
       ? { wallAttachment: { x, y } }
       : {}),
   };

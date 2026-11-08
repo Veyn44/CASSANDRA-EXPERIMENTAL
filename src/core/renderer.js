@@ -1,4 +1,4 @@
-import { validatePrefabPlacement, prefabSize, getBuildable } from '../systems/prefab-manager.js';
+import { validatePrefabPlacement, prefabSize, getBuildable, getActiveDeckObjects } from '../systems/prefab-manager.js';
 import { isBlocked } from '../systems/navigation.js';
 import { isCellVisible } from '../systems/visibility-manager.js';
 const C = {
@@ -182,12 +182,12 @@ export function createRenderer(canvas, s) {
     c.setLineDash([Math.max(3, z * 0.18), Math.max(2, z * 0.12)]);
     c.strokeRect(anchor.x, anchor.y, z * 2, z * 2);
     c.restore();
-    if (s.activeDeck === 'Z0') for (const o of Object.values(s.map.objects)) {
+    for (const o of Object.values(getActiveDeckObjects(s))) {
       const p = pos(o.x, o.y),
         w = o.w * z,
         h = o.h * z,
         selected = s.selectedObject === o.id,
-        deconstruct = s.map.plans[o.x + ',' + o.y]?.type === 'demolishModule';
+        deconstruct = s.activeDeck === 'Z0' && s.map.plans[o.x + ',' + o.y]?.type === 'demolishModule';
       c.save();
       if (deconstruct) {
         c.globalAlpha = 0.72;
@@ -343,7 +343,7 @@ export function createRenderer(canvas, s) {
       c.strokeRect(p.x + z * 0.1, p.y + z * 0.1, z * 0.8, z * 0.8);
       c.restore();
     }
-    if (s.activeDeck === 'Z0' && s.activeTool === 'prefab' && s.hoverTile) {
+    if (s.activeTool === 'prefab' && s.hoverTile) {
       const def = getBuildable(s.selectedPrefab),
         check = validatePrefabPlacement(s, s.selectedPrefab, s.hoverTile.x, s.hoverTile.y),
         size = prefabSize(def, s.rotation),

@@ -29,6 +29,13 @@ export function createTechnicalDecks(zeroLevelTiles, objects = {}) {
   const shaft = footprintSet.has(key(shaftX, shaftY)) ? [{ x: shaftX, y: shaftY }] : [];
 
   const powerRouteCells = new Set();
+  // The shaft supplies a small service landing on every technical deck.
+  for (const point of shaft) {
+    for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+      const position = key(point.x + dx, point.y + dy);
+      if (footprintSet.has(position)) powerRouteCells.add(position);
+    }
+  }
   for (const [position, tile] of Object.entries(zeroLevelTiles)) {
     if (tile?.aluminiumWall) powerRouteCells.add(position);
   }
@@ -55,9 +62,8 @@ export function createTechnicalDecks(zeroLevelTiles, objects = {}) {
       const tiles = {};
       for (const position of footprint) {
         if (shaftSet.has(position)) continue;
-        const isPowerRouteFloor = level === 'Z-1' && powerRouteCells.has(position) && !isExteriorBoundary(position);
-        tiles[position] = level === 'Z-1'
-          ? {
+        const isPowerRouteFloor = powerRouteCells.has(position) && !isExteriorBoundary(position);
+        tiles[position] = {
               type: isPowerRouteFloor ? 'HULL_FLOOR' : 'HULL_TILE',
               material: 'SHIP_HULL',
               buildable: false,
@@ -67,14 +73,6 @@ export function createTechnicalDecks(zeroLevelTiles, objects = {}) {
               integrity: null,
               airtight: true,
               walkable: isPowerRouteFloor,
-            }
-          : {
-              type: 'SHIP_HULL',
-              material: 'SHIP_HULL',
-              buildable: false,
-              demolishable: false,
-              repairable: false,
-              undamageable: true,
             };
       }
       return [
@@ -98,6 +96,9 @@ export function createTechnicalDecks(zeroLevelTiles, objects = {}) {
  */
 export function syncTechnicalDecksState(state) {
   state.technicalDecks = createTechnicalDecks(state.map.tiles, state.map.objects);
+  state.technicalDeckObjects ??= Object.fromEntries(
+    TECHNICAL_DECK_LEVELS.map((level) => [level, {}])
+  );
   const shaft = state.technicalDecks['Z+2']?.shaft ?? [];
   state.accessShaft.cells = shaft.map(({ x, y }) => ({ x, y }));
   state.accessShaft.w = 1;

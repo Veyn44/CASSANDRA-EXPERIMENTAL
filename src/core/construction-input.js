@@ -7,7 +7,12 @@ export function createConstructionInput(s, inside, objectAt, refresh, note) {
   function place(p) {
     if (!inside(p)) return;
     if (s.activeDeck !== 'Z0') {
-      note('TECHNICAL DECKS ARE SEALED · CONSTRUCTION DISABLED');
+      if (s.activeTool === 'prefab') {
+        const result = placePrefab(s, s.selectedPrefab, p.x, p.y);
+        note(result.message);
+        if (result.objectId) s.selectedObject = result.objectId;
+      } else note('TECHNICAL DECKS · ONLY CONTROL PANELS CAN BE INSTALLED');
+      refresh();
       return;
     }
     if (p.x >= 128) {

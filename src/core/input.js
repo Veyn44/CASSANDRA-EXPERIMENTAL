@@ -1,4 +1,4 @@
-import { getBuildable } from '../systems/prefab-manager.js';
+import { getBuildable, getActiveDeckObjects } from '../systems/prefab-manager.js';
 import { applyDamageAt } from '../systems/damage-system.js';
 import { isBlocked, isDeckLocked } from '../systems/navigation.js';
 import { syncAccessShaftPressureLocks } from '../systems/access-shaft-system.js';
@@ -27,7 +27,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
     return p.x >= 0 && p.y >= 0 && p.x < 256 && p.y < 128;
   }
   function objectAt(p) {
-    return Object.values(s.map.objects).find(
+    return Object.values(getActiveDeckObjects(s)).find(
       (o) => p.x >= o.x && p.y >= o.y && p.x < o.x + o.w && p.y < o.y + o.h
     );
   }
@@ -166,7 +166,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
         refresh();
         return;
       }
-      if (s.activeDeck === 'Z0' && s.activeTool) {
+      if (s.activeTool) {
         place(p);
         if (s.activeTool === 'hull' || s.activeTool === 'wall' || s.activeTool === 'erase') {
           painting = true;
@@ -181,11 +181,11 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
         refresh();
         return;
       }
-      const obj = s.activeDeck === 'Z0' ? objectAt(p) : null;
+      const obj = objectAt(p);
       if (obj) {
         s.selectedObject = obj.id;
         s.pawn.selected = false;
-        if (obj.type === 'MOD0014' && obj.built !== false) onControlPanelClick?.(obj);
+        if (s.activeDeck === 'Z0' && obj.type === 'MOD0014' && obj.built !== false) onControlPanelClick?.(obj);
         refresh();
         return;
       }
