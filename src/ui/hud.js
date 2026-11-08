@@ -15,6 +15,12 @@ export function renderHud(state, renderer, sectionsPanel, gridBtn) {
   $('#titanium-stock').textContent = state.gameConfig.unlimitedResources
     ? 'Unlimited · Developer Mode'
     : state.resources.titanium + ' units available';
+  $('#aluminium-stock').textContent = state.gameConfig.unlimitedResources
+    ? 'Unlimited · Developer Mode'
+    : state.resources.aluminium + ' units available';
+  $('#aluminium-count').textContent = state.gameConfig.unlimitedResources
+    ? '∞'
+    : state.resources.aluminium;
   $('#connected-count').textContent = connectedHullCount(state) + ' tiles';
   $('#ship-hull-count').textContent = shipHullTileCount(state) + ' tiles';
   sectionsPanel?.refresh();
