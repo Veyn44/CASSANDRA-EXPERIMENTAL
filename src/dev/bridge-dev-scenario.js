@@ -1,6 +1,6 @@
 import { getBuildable } from '../systems/prefab-manager.js';
 
-// Bridge-deck starting layout imported from cassandra_ship_layout.json (format v3).
+// Bridge-deck starting layout imported from cassandra_ship_layout.json (format v4).
 // This scenario intentionally defines Z0 only. Technical decks are derived separately.
 const TILE_LAYOUT = [
   [65,60,'TITANIUM_HULL_WALL'],[66,60,'TITANIUM_HULL_WALL'],[67,60,'TITANIUM_HULL_WALL'],[68,60,'TITANIUM_HULL_WALL'],[69,60,'TITANIUM_HULL_WALL'],[70,60,'TITANIUM_HULL_WALL'],[71,60,'TITANIUM_HULL_WALL'],[72,60,'TITANIUM_HULL_WALL'],[73,60,'TITANIUM_HULL_WALL'],[74,60,'TITANIUM_HULL_WALL'],
