@@ -164,10 +164,13 @@ export function placePrefab(s, id, x, y) {
       ? { wallAttachment: { x, y } }
       : {}),
   };
+  const costLabel = Object.entries(item.constructionCost ?? { titanium: 1 })
+    .map(([resource, amount]) => amount + ' ' + resource.toUpperCase())
+    .join(' + ');
   return {
     message: built
       ? item.name + ' BUILT · DEV CREATOR'
-      : item.name + ' BLUEPRINT PLACED · 1 TITANIUM · 1 AP',
+      : item.name + ' BLUEPRINT PLACED · ' + costLabel + ' · 1 AP',
     objectId: idValue,
   };
 }
