@@ -1,48 +1,7 @@
-const base = {
-  stats: {},
-  attributes: {},
-  requirements: {},
-  systems: {},
-  defaultMaterialFamily: 'titanium',
-};
+export const FURNITURE = [];
 
-export const FURNITURE = [
-  {
-    ...base,
-    id: 'FUR0001',
-    legacyId: 'wall-light',
-    name: 'Wall Light',
-    category: 'furniture',
-    subcategory: 'lighting',
-    type: 'furniture',
-    w: 1,
-    h: 1,
-    description: 'Interior wall-mounted light fixture.',
-    function: 'Interior lighting',
-    placement: 'wall-mounted',
-  },
-  {
-    ...base,
-    id: 'FUR0002',
-    legacyId: 'titanium-wall-connector',
-    name: 'Titanium Wall Connector',
-    category: 'furniture',
-    subcategory: 'electrical',
-    type: 'furniture',
-    w: 1,
-    h: 1,
-    description: 'Interior electrical connector mounted beside a Titanium Hull Wall.',
-    function: 'External-to-internal electrical connection',
-    placement: 'titanium-wall-connector',
-  },
-];
-
-export const FURNITURE_BY_ID = Object.freeze(
-  Object.fromEntries(FURNITURE.map((item) => [item.id, item]))
-);
-export const FURNITURE_BY_LEGACY_ID = Object.freeze(
-  Object.fromEntries(FURNITURE.map((item) => [item.legacyId, item]))
-);
-export function getFurniture(id) {
-  return FURNITURE_BY_ID[id] ?? FURNITURE_BY_LEGACY_ID[id] ?? null;
+export const FURNITURE_BY_ID = Object.freeze({});
+export const FURNITURE_BY_LEGACY_ID = Object.freeze({});
+export function getFurniture() {
+  return null;
 }
