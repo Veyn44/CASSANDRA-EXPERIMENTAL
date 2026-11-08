@@ -54,18 +54,10 @@ export function createSectionsPanel(root, s, onChange) {
           name: 'TECHNICAL DECK ' + deckLevel,
           airtightness: 'SEALED',
           weight: null,
-          atmosphere: deckLevel === 'Z-1'
-            ? (technicalDeck?.environmentState?.atmosphere ?? 'NOT SIMULATED')
-            : 'NOT SIMULATED',
-          pressure: deckLevel === 'Z-1'
-            ? (technicalDeck?.environmentState?.pressure ?? 'NOT SIMULATED')
-            : 'NOT SIMULATED',
-          temperature: deckLevel === 'Z-1'
-            ? (technicalDeck?.environmentState?.temperature ?? null)
-            : null,
-          environment: deckLevel === 'Z-1'
-            ? (technicalDeck?.environmentState?.environment ?? 'SEALED SHIP STRUCTURE')
-            : 'SEALED SHIP STRUCTURE',
+          atmosphere: 'NOT SIMULATED',
+          pressure: 'NOT SIMULATED',
+          temperature: null,
+          environment: 'SEALED SHIP STRUCTURE',
           activeTiles: Object.keys(technicalDeck?.tiles ?? {}).length,
         };
     const technicalFootprint = new Set(technicalDeck?.footprint ?? []);
