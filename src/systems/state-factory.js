@@ -6,31 +6,22 @@ import {
   DECK_LEVELS,
 } from './technical-deck-generator.js';
 import { syncAccessShaftPressureLocks } from './access-shaft-system.js';
+import { createBridgeDevScenario } from '../dev/bridge-dev-scenario.js';
 const key = (x, y) => x + ',' + y;
 export function createInitialState({ mode = 'normal' } = {}) {
-  const tiles = {};
-  const hullRows = { 64: [64] };
-  const hullWallRows = {};
-  const aluminiumWallRows = {};
-  const positions = (rows) =>
-    new Set(Object.entries(rows).flatMap(([y, xs]) => xs.map((x) => key(x, Number(y)))));
-  const hullSet = positions(hullRows),
-    hullWallSet = positions(hullWallRows),
-    aluminiumWallSet = positions(aluminiumWallRows);
-  for (const k of hullSet) {
-    const isHullWall = hullWallSet.has(k),
-      isAluminiumWall = aluminiumWallSet.has(k);
-    tiles[k] = {
+  const devScenario = mode === 'dev' ? createBridgeDevScenario() : null;
+  const tiles = devScenario?.tiles ?? {
+    [key(64, 64)]: {
       hull: true,
       integrity: 100,
-      wall: isHullWall,
-      wallIntegrity: isHullWall ? 100 : null,
-      aluminiumWall: isAluminiumWall,
-      aluminiumWallIntegrity: isAluminiumWall ? 100 : null,
-    };
-  }
+      wall: false,
+      wallIntegrity: null,
+      aluminiumWall: false,
+      aluminiumWallIntegrity: null,
+    },
+  };
   const gameConfig = createGameConfig(mode);
-  const objects = {};
+  const objects = devScenario?.objects ?? {};
   const technicalDecks = createTechnicalDecks(tiles);
   const shaftCells = technicalDecks['Z+2']?.shaft ?? [];
   const state = {
@@ -55,7 +46,7 @@ export function createInitialState({ mode = 'normal' } = {}) {
     devCreator: false,
     damageSimulator: { active: false },
     rotation: 0,
-    nextObjectId: 1,
+    nextObjectId: devScenario?.nextObjectId ?? 1,
     hoverTile: null,
     activeDeck: 'Z0',
     technicalDecks,
@@ -67,8 +58,8 @@ export function createInitialState({ mode = 'normal' } = {}) {
           { manualLock: false, autoLock: false, lockReason: null },
         ])
       ),
-      x: shaftCells.length ? Math.min(...shaftCells.map((p) => p.x)) : 0,
-      y: shaftCells.length ? Math.min(...shaftCells.map((p) => p.y)) : 0,
+      x: devScenario?.shaft.x ?? (shaftCells.length ? Math.min(...shaftCells.map((p) => p.x)) : 0),
+      y: devScenario?.shaft.y ?? (shaftCells.length ? Math.min(...shaftCells.map((p) => p.y)) : 0),
       w: 1,
       h: 1,
       cells: shaftCells.map((p) => ({ ...p })),
