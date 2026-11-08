@@ -85,19 +85,29 @@ export function completePlanAction(s, x, y) {
   };
 }
 export function completeModuleAction(s, id) {
-  const o = s.map.objects[id];
+  const o = s.map.objects[id],
+    item = o ? getBuildable(o.type) : null;
   if (!o || o.built) return { ok: false, message: 'NO MODULE BLUEPRINT HERE' };
   if (s.pawn.op < 1) return { ok: false, message: 'NOT ENOUGH AP · 1 AP REQUIRED' };
-  if (!s.gameConfig.freeConstruction && s.resources.titanium < 1)
-    return { ok: false, message: 'INSUFFICIENT TITANIUM' };
-  if (!s.gameConfig.freeConstruction) s.resources.titanium--;
+  const cost = item?.constructionCost ?? { titanium: 1 };
+  if (!s.gameConfig.freeConstruction) {
+    const missing = Object.entries(cost).find(
+      ([resource, amount]) => (s.resources[resource] ?? 0) < amount
+    );
+    if (missing)
+      return { ok: false, message: 'INSUFFICIENT ' + missing[0].toUpperCase() };
+    for (const [resource, amount] of Object.entries(cost)) s.resources[resource] -= amount;
+  }
   o.built = true;
   s.pawn.op--;
+  const costLabel = Object.entries(cost)
+    .map(([resource, amount]) => amount + ' ' + resource.toUpperCase())
+    .join(' + ');
   return {
     ok: true,
     message:
       'BUILD ITEM CONSTRUCTED · ' +
-      (getBuildable(o.type)?.legacyId ?? o.type).toUpperCase() +
-      ' · 1 AP SPENT',
+      (item?.legacyId ?? o.type).toUpperCase() +
+      ' · ' + costLabel + ' · 1 AP SPENT',
   };
 }
