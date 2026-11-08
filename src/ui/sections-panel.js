@@ -30,7 +30,7 @@ export function createSectionsPanel(root, s, onChange) {
     render();
   }
   function selectPanel(id) {
-    const data = detectSections(s),
+    const data = s.activeDeck === 'Z0' ? detectSections(s) : detectTechnicalDeckSections(s, s.activeDeck),
       panel = data.panels.find((v) => v.id === id);
     s.sectionsUi.selectedPanelId = id;
     s.sectionsUi.selectedSectionId = panel?.sectionId ?? null;
@@ -46,8 +46,9 @@ export function createSectionsPanel(root, s, onChange) {
     const data = detectSections(s),
       deckLevel = s.activeDeck ?? 'Z0',
       technicalDeck = deckLevel === 'Z0' ? null : s.technicalDecks?.[deckLevel],
-      selected = deckLevel === 'Z0' ? data.byId[s.sectionsUi.selectedSectionId] ?? null : null;
-    const panels = deckLevel === 'Z0' ? data.panels : [];
+      deckData = deckLevel === 'Z0' ? data : detectTechnicalDeckSections(s, deckLevel),
+      selected = deckData.byId[s.sectionsUi.selectedSectionId] ?? null;
+    const panels = deckData.panels;
     const info = deckLevel === 'Z0'
       ? selected ? getSectionInfo(selected) : getVacuumInfo()
       : {
@@ -211,7 +212,7 @@ export function createSectionsPanel(root, s, onChange) {
     root.innerHTML =
       '<div class="sections-window"><header class="sections-header"><div><small>CASSANDRA · COMMAND SYSTEM</small><h2>SECTION CONTROL</h2></div><button data-close aria-label="Close">×</button></header><nav class="sections-deck-tabs" aria-label="Select ship deck">' +
       DECK_LEVELS.map((level) => '<button data-deck="' + level + '" class="' + (deckLevel === level ? 'active' : '') + '">' + level + '</button>').join('') +
-      '</nav><div class="sections-layout"><aside class="sections-panel-list"><h3>' + (deckLevel === 'Z0' ? 'CONTROL PANELS' : 'DECK STATUS') + '</h3>' +
+      '</nav><div class="sections-layout"><aside class="sections-panel-list"><h3>CONTROL PANELS</h3>' +
       (panelRows || '<p class="sections-empty">NO CONTROL PANELS INSTALLED</p>') +
       '</aside><section class="sections-blueprint"><h3>' + (deckLevel === 'Z0' ? 'SHIP BLUEPRINT' : 'DECK BLUEPRINT') + '</h3><div class="section-map" style="grid-template-columns:repeat(' +
       width +
@@ -219,7 +220,7 @@ export function createSectionsPanel(root, s, onChange) {
       height +
       ',minmax(5px,1fr))">' +
       grid.join('') +
-      '</div><p class="blueprint-legend"><i></i> ' + (deckLevel === 'Z0' ? 'SELECTED SECTION · CLICK SPACE FOR VACUUM' : 'SEALED HULL · CENTRAL SHAFT · READ ONLY') + '</p></section><aside class="sections-info"><h3>' + (deckLevel === 'Z0' ? 'SECTION INFO' : 'DECK INFO') + '</h3><div class="section-info-card"><small>' +
+      '</div><p class="blueprint-legend"><i></i> ' + (deckLevel === 'Z0' ? 'SELECTED SECTION · CLICK SPACE FOR VACUUM' : 'SELECT A POWER ROUTE SECTION') + '</p></section><aside class="sections-info"><h3>' + (deckLevel === 'Z0' ? 'SECTION INFO' : 'DECK INFO') + '</h3><div class="section-info-card"><small>' +
       esc(info.type === 'VACUUM' ? 'EXTERNAL ENVIRONMENT' : info.id) +
       '</small><h2>' +
       esc(info.name) +
