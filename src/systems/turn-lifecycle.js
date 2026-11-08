@@ -96,49 +96,12 @@ function environmentDiagnostics(state, environment, previousState, nextState) {
   });
 }
 
-
-function syncZ1EnvironmentFromZ0(state, environment) {
-  const pressureSeverity = {
-    OPTIMAL: 0,
-    LOW: 1,
-    VACUUM: 2,
-    HIGH: 3,
-    EXTREME: 4,
-  };
-  const worstSection = [...environment.sections].sort((a, b) => {
-    const severityA = a.environment === 'CRITICAL'
-      ? 5
-      : (pressureSeverity[a.pressure] ?? 0);
-    const severityB = b.environment === 'CRITICAL'
-      ? 5
-      : (pressureSeverity[b.pressure] ?? 0);
-    if (severityA !== severityB) return severityB - severityA;
-    const temperatureA = Number.isFinite(a.temperature) ? a.temperature : Infinity;
-    const temperatureB = Number.isFinite(b.temperature) ? b.temperature : Infinity;
-    return temperatureA - temperatureB;
-  })[0];
-
-  const deck = state.technicalDecks?.['Z-1'];
-  if (!deck) return;
-
-  deck.environmentState = {
-    source: 'Z0',
-    sourceSection: worstSection?.id ?? null,
-    environment: worstSection?.environment ?? 'UNMANAGED',
-    atmosphere: worstSection?.atmosphere ?? 'NONE',
-    pressure: worstSection?.pressure ?? 'VACUUM',
-    temperature: worstSection?.temperature ?? null,
-    airtightness: 'SEALED',
-  };
-}
-
 export function endTurn(s) {
   s.turn++;
   if ((s.turn - 1) % 2 === 0) s.day++;
   syncTechnicalDecksState(s);
   const previousEnvironmentState = { ...(s.environmentState ?? {}) };
   const environment = advanceEnvironment(s);
-  syncZ1EnvironmentFromZ0(s, environment);
   const diagnostics = environmentDiagnostics(
     s,
     environment,
