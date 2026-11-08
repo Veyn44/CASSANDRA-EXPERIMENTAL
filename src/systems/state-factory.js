@@ -3,7 +3,7 @@ import { advanceEnvironment } from './section-manager.js';
 import {
   createTechnicalDecks,
   DECK_ENVIRONMENT_TAGS,
-  DECK_LEVELS,
+  TECHNICAL_DECK_LEVELS as DECK_LEVELS,
 } from './technical-deck-generator.js';
 import { syncAccessShaftPressureLocks } from './access-shaft-system.js';
 import { createBridgeDevScenario } from '../dev/bridge-dev-scenario.js';
