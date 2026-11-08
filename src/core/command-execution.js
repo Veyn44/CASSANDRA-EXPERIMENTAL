@@ -1,6 +1,7 @@
 import { completePlanAction, completeModuleAction } from '../systems/construction-system.js';
 import { findDeckPath, findWorkPath, isBlocked, isDeckLocked } from '../systems/navigation.js';
 import { syncAccessShaftPressureLocks } from '../systems/access-shaft-system.js';
+import { getBuildable } from '../systems/prefab-manager.js';
 
 const key = (x, y) => x + ',' + y;
 
