@@ -45,8 +45,13 @@ The automated checks validate formatting, JavaScript syntax and relative import 
 - [ ] Confirm DEV tools can be opened and closed.
 - [ ] Open the AST panel and DEV creator; verify their controls respond.
 - [ ] Open the damage simulator and toggle it.
-- [ ] Export the ship layout and confirm a `cassandra_ship_layout.json` file downloads with format version 2.
+- [ ] Export the ship layout and confirm a `cassandra_ship_layout.json` file downloads with format version 4 and contains Z+2, Z+1, Z0, Z-1 and Z-2.
 - [ ] Return to the main menu and start a normal game; confirm DEV-only controls are hidden.
+
+- [ ] In DEV mode, inspect each technical deck; confirm the shaft service landing appears and only Control Panel I is offered for placement.
+- [ ] Place a Control Panel on a powered service floor on each technical deck; confirm objects remain isolated per deck and appear in Sections UI.
+- [ ] Confirm placement is rejected on structural hull tiles and when a section already has a panel.
+- [ ] Export again and verify every deck has its own tiles and objects arrays, including empty arrays where nothing is installed.
 
 ## Regression checks
 
