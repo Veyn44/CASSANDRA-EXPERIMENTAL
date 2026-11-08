@@ -1,4 +1,5 @@
 import { advanceEnvironment } from './section-manager.js';
+import { syncTechnicalDecksState } from './technical-deck-generator.js';
 
 function sectionSignature(section) {
   return section.tiles
@@ -98,6 +99,7 @@ function environmentDiagnostics(state, environment, previousState, nextState) {
 export function endTurn(s) {
   s.turn++;
   if ((s.turn - 1) % 2 === 0) s.day++;
+  syncTechnicalDecksState(s);
   const previousEnvironmentState = { ...(s.environmentState ?? {}) };
   const environment = advanceEnvironment(s);
   const diagnostics = environmentDiagnostics(
