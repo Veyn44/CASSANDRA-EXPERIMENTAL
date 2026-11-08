@@ -39,6 +39,14 @@ export const MATERIALS = [
     asset: 'assets/materials/MAT0005.png',
     properties: { gas: true, fuel: true },
   },
+  {
+    id: 'MAT0006',
+    name: 'Aluminium',
+    category: 'structural',
+    unit: 'unit',
+    asset: 'assets/materials/MAT0006.png',
+    properties: { structural: true, conductive: true },
+  },
 ];
 
 export const MATERIAL_BY_ID = Object.freeze(
