@@ -182,7 +182,11 @@ export function createRenderer(canvas, s) {
     c.setLineDash([Math.max(3, z * 0.18), Math.max(2, z * 0.12)]);
     c.strokeRect(anchor.x, anchor.y, z * 2, z * 2);
     c.restore();
-    for (const o of Object.values(getActiveDeckObjects(s))) {
+    // Solar panels are exterior equipment: render them after the frame layer so they stay visually on top.
+    const renderObjects = Object.values(getActiveDeckObjects(s)).sort(
+      (a, b) => Number(a.type === 'MOD0003') - Number(b.type === 'MOD0003')
+    );
+    for (const o of renderObjects) {
       const p = pos(o.x, o.y),
         w = o.w * z,
         h = o.h * z,
