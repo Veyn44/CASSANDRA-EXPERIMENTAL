@@ -1,4 +1,4 @@
-import { PREFABS, getBuildable } from '../systems/prefab-manager.js';
+import { PREFABS, getBuildable, getActiveDeckObjects } from '../systems/prefab-manager.js';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -97,8 +97,9 @@ export function renderBuildCatalog(state, activeCategory, setActiveCategory, ref
       })
   );
   const details = $('#object-details');
-  if (state.selectedObject && state.map.objects[state.selectedObject]) {
-    const selected = state.map.objects[state.selectedObject],
+  const activeObjects = getActiveDeckObjects(state);
+  if (state.selectedObject && activeObjects[state.selectedObject]) {
+    const selected = activeObjects[state.selectedObject],
       p = getBuildable(selected.type);
     details.hidden = false;
     details.className = 'object-details';
