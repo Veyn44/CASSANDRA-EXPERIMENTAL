@@ -33,6 +33,7 @@ export function createTechnicalDecks(zeroLevelTiles, objects = {}) {
     if (tile?.aluminiumWall) powerRouteCells.add(position);
   }
   for (const object of Object.values(objects)) {
+    if (object.built === false) continue;
     const item = getBuildable(object.type);
     if (!item?.systems?.powerRoute) continue;
     for (let y = object.y; y < object.y + object.h; y++)
