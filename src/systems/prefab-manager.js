@@ -1,10 +1,12 @@
 import { detectSections } from './section-manager.js';
 import { MODULES, getModule } from '../data/modules/modules.js';
 import { STRUCTURES, getStructure } from '../data/structures/structures.js';
+import { ENERGY, getEnergy } from '../data/energy/energy.js';
 import { FURNITURE, getFurniture } from '../data/furniture/furniture.js';
 
-export const PREFABS = [...MODULES, ...STRUCTURES, ...FURNITURE];
-export const getBuildable = (id) => getModule(id) ?? getStructure(id) ?? getFurniture(id);
+export const PREFABS = [...MODULES, ...STRUCTURES, ...ENERGY, ...FURNITURE];
+export const getBuildable = (id) =>
+  getModule(id) ?? getStructure(id) ?? getEnergy(id) ?? getFurniture(id);
 export function rotateTool(s, step) {
   s.rotation = (s.rotation + step + 4) % 4;
 }
