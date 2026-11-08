@@ -91,5 +91,23 @@ export function createBridgeDevScenario() {
     shaft: { x: 64, y: 64, w: 1, h: 1 },
     footprintTiles: TILE_LAYOUT.length,
     objectCount: OBJECT_LAYOUT.length,
+    technicalDeckObjects: {
+      'Z-1': {
+        'build-26': {
+          id: 'build-26',
+          type: 'MOD0014',
+          family: 'MOD',
+          x: 65,
+          y: 64,
+          w: 1,
+          h: 1,
+          rotation: 0,
+          built: true,
+          materialFamily: 'titanium',
+          integrity: 100,
+          sectionName: 'SECTION',
+        },
+      },
+    },
   };
 }
