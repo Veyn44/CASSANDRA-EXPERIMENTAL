@@ -4,6 +4,8 @@ import {
   getVacuumInfo,
   completeSectionScan,
 } from '../systems/section-manager.js';
+import { detectTechnicalDeckSections } from '../systems/technical-deck-sections.js';
+import { getActiveDeckObjects } from '../systems/prefab-manager.js';
 const esc = (v) =>
   String(v ?? '').replace(
     /[&<>"']/g,
@@ -23,7 +25,7 @@ export function createSectionsPanel(root, s, onChange) {
   function selectSection(id) {
     s.sectionsUi.selectedSectionId = id;
     s.sectionsUi.selectedPanelId =
-      detectSections(s).panels.find((p) => p.sectionId === id)?.id ?? null;
+      (s.activeDeck === 'Z0' ? detectSections(s) : detectTechnicalDeckSections(s, s.activeDeck)).panels.find((p) => p.sectionId === id)?.id ?? null;
     report = null;
     render();
   }
@@ -49,16 +51,16 @@ export function createSectionsPanel(root, s, onChange) {
     const info = deckLevel === 'Z0'
       ? selected ? getSectionInfo(selected) : getVacuumInfo()
       : {
-          type: 'TECHNICAL DECK',
-          id: deckLevel,
-          name: 'TECHNICAL DECK ' + deckLevel,
-          airtightness: 'SEALED',
+          type: 'TECHNICAL SECTION',
+          id: selected?.id ?? deckLevel,
+          name: selected?.name ?? 'TECHNICAL DECK ' + deckLevel,
+          airtightness: 'STRUCTURAL',
           weight: null,
           atmosphere: 'NOT SIMULATED',
           pressure: 'NOT SIMULATED',
           temperature: null,
-          environment: 'SEALED SHIP STRUCTURE',
-          activeTiles: Object.keys(technicalDeck?.tiles ?? {}).length,
+          environment: 'POWER ROUTE · ' + (selected ? 'CONNECTED' : 'NO SECTION SELECTED'),
+          activeTiles: selected?.tileCount ?? Object.values(technicalDeck?.tiles ?? {}).filter((tile) => tile.walkable).length,
         };
     const technicalFootprint = new Set(technicalDeck?.footprint ?? []);
     const allTiles = deckLevel === 'Z0'
@@ -85,8 +87,10 @@ export function createSectionsPanel(root, s, onChange) {
             continue;
           }
           const shaft = technicalDeck?.shaft.some((point) => point.x === x && point.y === y);
-          grid.push('<div class="section-map-cell ' + (shaft ? 'technical-shaft-cell' : 'technical-hull-cell') +
-            '" title="' + (shaft ? 'CENTRAL SHAFT' : 'SEALED SHIP HULL') + '"></div>');
+          const sectionId = deckData.tileToSection[tileKey];
+          const serviceFloor = technicalDeck?.tiles?.[tileKey]?.walkable === true;
+          if (serviceFloor) grid.push('<button class="section-map-cell ' + (sectionId === s.sectionsUi.selectedSectionId ? 'selected' : sectionId ? 'section-cell' : 'unassigned') + '" data-section="' + esc(sectionId ?? '') + '" title="' + esc(sectionId ?? 'POWER ROUTE') + '">' + (panels.some((panel) => panel.x === x && panel.y === y) ? '⌖' : '') + '</button>');
+          else grid.push('<div class="section-map-cell ' + (shaft ? 'technical-shaft-cell' : 'technical-hull-cell') + '" title="' + (shaft ? 'CENTRAL SHAFT' : 'STRUCTURAL HULL') + '"></div>');
           continue;
         }
         const id = data.tileToSection[tileKey],
@@ -208,7 +212,7 @@ export function createSectionsPanel(root, s, onChange) {
       '<div class="sections-window"><header class="sections-header"><div><small>CASSANDRA · COMMAND SYSTEM</small><h2>SECTION CONTROL</h2></div><button data-close aria-label="Close">×</button></header><nav class="sections-deck-tabs" aria-label="Select ship deck">' +
       DECK_LEVELS.map((level) => '<button data-deck="' + level + '" class="' + (deckLevel === level ? 'active' : '') + '">' + level + '</button>').join('') +
       '</nav><div class="sections-layout"><aside class="sections-panel-list"><h3>' + (deckLevel === 'Z0' ? 'CONTROL PANELS' : 'DECK STATUS') + '</h3>' +
-      (deckLevel === 'Z0' ? panelRows || '<p class="sections-empty">NO CONTROL PANELS INSTALLED</p>' : '<p class="sections-empty">TECHNICAL DECK · READ ONLY</p>') +
+      (panelRows || '<p class="sections-empty">NO CONTROL PANELS INSTALLED</p>') +
       '</aside><section class="sections-blueprint"><h3>' + (deckLevel === 'Z0' ? 'SHIP BLUEPRINT' : 'DECK BLUEPRINT') + '</h3><div class="section-map" style="grid-template-columns:repeat(' +
       width +
       ',minmax(5px,1fr));grid-template-rows:repeat(' +
@@ -292,11 +296,11 @@ export function createSectionsPanel(root, s, onChange) {
     root.querySelectorAll('[data-rename]').forEach(
       (b) =>
         (b.onclick = () => {
-          const panel = detectSections(s).panels.find((v) => v.id === b.dataset.rename);
+          const panel = (s.activeDeck === 'Z0' ? detectSections(s) : detectTechnicalDeckSections(s, s.activeDeck)).panels.find((v) => v.id === b.dataset.rename);
           if (!panel) return;
           const value = prompt('SECTION NAME', panel.name);
           if (value?.trim()) {
-            const obj = s.map.objects[panel.id];
+            const obj = getActiveDeckObjects(s)[panel.id];
             obj.sectionName = value.trim().slice(0, 32);
             render();
           }
