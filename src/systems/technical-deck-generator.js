@@ -47,17 +47,26 @@ export function createTechnicalDecks(zeroLevelTiles, objects = {}) {
       for (const position of footprint) {
         if (shaftSet.has(position)) continue;
         const isPowerRouteFloor = level === 'Z-1' && powerRouteCells.has(position);
-        tiles[position] = {
-          type: isPowerRouteFloor ? 'SHIP_HULL_FLOOR' : 'HULL_TILE',
-          material: 'SHIP_HULL',
-          buildable: false,
-          demolishable: false,
-          repairable: false,
-          undamageable: true,
-          integrity: null,
-          airtight: true,
-          walkable: isPowerRouteFloor,
-        };
+        tiles[position] = level === 'Z-1'
+          ? {
+              type: isPowerRouteFloor ? 'SHIP_HULL_FLOOR' : 'HULL_TILE',
+              material: 'SHIP_HULL',
+              buildable: false,
+              demolishable: false,
+              repairable: false,
+              undamageable: true,
+              integrity: null,
+              airtight: true,
+              walkable: isPowerRouteFloor,
+            }
+          : {
+              type: 'SHIP_HULL',
+              material: 'SHIP_HULL',
+              buildable: false,
+              demolishable: false,
+              repairable: false,
+              undamageable: true,
+            };
       }
       return [
         level,
