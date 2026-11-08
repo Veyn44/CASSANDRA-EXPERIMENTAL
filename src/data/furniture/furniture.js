@@ -21,6 +21,20 @@ export const FURNITURE = [
     function: 'Interior lighting',
     placement: 'wall-mounted',
   },
+  {
+    ...base,
+    id: 'FUR0002',
+    legacyId: 'titanium-wall-connector',
+    name: 'Titanium Wall Connector',
+    category: 'furniture',
+    subcategory: 'electrical',
+    type: 'furniture',
+    w: 1,
+    h: 1,
+    description: 'Interior electrical connector mounted beside a Titanium Hull Wall.',
+    function: 'External-to-internal electrical connection',
+    placement: 'titanium-wall-connector',
+  },
 ];
 
 export const FURNITURE_BY_ID = Object.freeze(
