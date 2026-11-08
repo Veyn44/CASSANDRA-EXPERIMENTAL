@@ -1,10 +1,16 @@
-# CASSANDRA-EXPERIMENTAL
+# CASSANDRA
 
-Experimental development copy of CASSANDRA 2.
+A browser-first, turn-based hard science-fiction exploration and research game.
 
-> Sandbox for testing changes. The stable `CASSANDRA2` repository must never be modified from this workflow.
+## Prototype direction
 
-## Status
+- HTML, CSS, JavaScript and Canvas.
+- GitHub Pages for instant browser testing.
+- Square logical grid with a near-top-down, RimWorld-inspired presentation.
+- First milestone: ship map, camera, pawn selection and movement.
 
-- GitHub write-access verification.
-- Initial project copy from `CASSANDRA2` pending.
+## Development principles
+
+- Separate simulation logic from rendering and UI.
+- Keep logical grid coordinates independent from sprite dimensions and visual perspective.
+- Build small playable increments; avoid premature complexity.
