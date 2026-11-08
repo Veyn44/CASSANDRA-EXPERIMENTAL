@@ -89,7 +89,21 @@ export function createRenderer(canvas, s) {
           k = x + ',' + y,
           tile = s.activeDeck === 'Z0' ? s.map.tiles[k] : s.technicalDecks?.[s.activeDeck]?.tiles[k],
           plan = s.activeDeck === 'Z0' ? s.map.plans[k] : null;
-        if (tile?.type === 'SHIP_HULL') {
+        if (tile?.type === 'HULL_FLOOR') {
+          c.fillStyle = '#385b64';
+          c.fillRect(p.x, p.y, z, z);
+          c.strokeStyle = '#76b8c1';
+          c.lineWidth = Math.max(1, z * 0.05);
+          c.strokeRect(p.x + 0.5, p.y + 0.5, z - 1, z - 1);
+          c.fillStyle = 'rgba(125,214,219,.19)';
+          c.fillRect(p.x + z * 0.24, p.y + z * 0.24, z * 0.52, z * 0.52);
+        } else if (tile?.type === 'HULL_TILE') {
+          c.fillStyle = '#283741';
+          c.fillRect(p.x, p.y, z, z);
+          c.strokeStyle = '#485b66';
+          c.lineWidth = Math.max(1, z * 0.04);
+          c.strokeRect(p.x + 0.5, p.y + 0.5, z - 1, z - 1);
+        } else if (tile?.type === 'SHIP_HULL') {
           c.fillStyle = '#526b78';
           c.fillRect(p.x, p.y, z, z);
           c.strokeStyle = '#9bb9c5';
