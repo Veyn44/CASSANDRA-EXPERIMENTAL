@@ -33,13 +33,13 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
     if (object.type !== 'MOD0014') continue;
     const sectionId = tileToSection[key(object.x, object.y)] ?? null;
     const section = sectionId ? byId[sectionId] : null;
-    if (section) section.panels.push(object);
+    if (section && object.built !== false) section.panels.push(object);
     panels.push({
       id: object.id, name: object.sectionName ?? section?.name ?? 'UNASSIGNED',
       x: object.x, y: object.y, sectionId,
-      active: Boolean(section && section.tileCount <= 64 && section.panels[0] === object),
-      status: !section ? 'INACTIVE' : section.tileCount > 64 ? 'INACTIVE' : section.panels[0] !== object ? 'INACTIVE' : 'ACTIVE',
-      reason: !section ? 'NO POWER ROUTE' : section.tileCount > 64 ? 'CAPACITY EXCEEDED' : section.panels[0] !== object ? 'DUPLICATE PANEL' : '',
+      active: Boolean(object.built !== false && section && section.tileCount <= 64 && section.panels[0] === object),
+      status: object.built === false ? 'BLUEPRINT' : !section ? 'INACTIVE' : section.tileCount > 64 ? 'INACTIVE' : section.panels[0] !== object ? 'INACTIVE' : 'ACTIVE',
+      reason: object.built === false ? 'NOT BUILT' : !section ? 'NO POWER ROUTE' : section.tileCount > 64 ? 'CAPACITY EXCEEDED' : section.panels[0] !== object ? 'DUPLICATE PANEL' : '',
     });
   }
   return { sections, byId, tileToSection, panels };
