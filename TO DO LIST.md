@@ -20,17 +20,19 @@
 - Before every code change, first tell the user exactly what will change, which files will be touched, and what will remain unchanged. Wait for explicit approval before editing.
 - After each approved change, fetch changed files from GitHub again and verify the requested changes. Clearly distinguish static verification from actual browser/gameplay testing.
 
-## Technical decks — approved implementation rules (2026-11-07)
+## Technical decks — approved implementation rules (2026-11-08)
 
-- Z0 is the single source of truth for the ship's outer Hull footprint.
-- Technical decks mirror the exact set of Hull coordinates in Z0; their dimensions are never configured independently.
-- A Z0 footprint expansion or reduction must regenerate technical-deck geometry from the updated Z0 footprint.
-- Technical deck geometry is stored separately from any future deck equipment/content so geometry regeneration cannot erase that content.
-- Technical deck surfaces use the generic `SHIP_HULL` type. It is not a player-buildable material and has no integrity, damage, repair, or demolition interactions.
-- Technical decks have a central 2×2 vertical shaft wherever those cells exist inside the Z0 footprint.
-- The first implementation exposes deck views using [ and ] to cycle levels and 0 to return to Z0. Technical deck views are read-only.
-- The starting technical levels are Z+2, Z+1, Z-1, and Z-2; Z0 remains the source level.
-- This is a geometry/rendering milestone only. It does not change Z0 construction, atmosphere, section detection, modules, economy, or JSON ship export.
+- Z0 defines the ship's base footprint. The upper and lower main decks retain their established relationship to this footprint.
+- Technical decks remain full, non-buildable, read-only structural spaces; they are not independently designed or expanded by the player.
+- Technical-deck geometry is derived through its corresponding parent deck: **Z+1 follows Z+2**, and **Z−1 follows Z0**. Z−2 is itself a technical deck and does not generate another technical level.
+- Keep the existing technical-deck generation and full-footprint model. Do not replace it with a sparse tunnel/path generator or an automatic shortest-route system.
+- Add a synchronization step that inspects Aluminium Walls on the parent deck and removes the technical-deck tile at each matching coordinate: Aluminium Walls on Z+2 affect Z+1; Aluminium Walls on Z0 affect Z−1.
+- This Aluminium-Wall-based tile removal must be kept in sync when the corresponding parent-deck Aluminium Walls are built or demolished. The exact tile-removal operation must preserve unrelated technical-deck content and must not independently alter the parent deck.
+- Technical deck surfaces continue to use the generic `SHIP_HULL` type where present. They are not player-buildable materials and have no integrity, damage, repair, or demolition interactions.
+- The central vertical access shaft remains **1×1 at the existing coordinates (64,64)**, wherever the required geometry exists.
+- The first implementation exposes deck views using [ and ] to cycle levels and 0 to return to Z0. Technical deck views remain read-only.
+- The five-level arrangement remains Z+2, Z+1, Z0, Z−1, and Z−2. Z0 defines the base footprint; Z+1 and Z−1 follow their respective parent decks as described above.
+- This is a geometry/synchronization milestone only. It does not independently redesign Z0 construction, atmosphere, section detection, economy, or JSON ship export.
 
 ## Persistent ship prefab and DEV tools rules
 
@@ -125,7 +127,7 @@ Phase 1 is not complete until all of the following have been checked together:
 - [ ] Only floor tiles count toward capacity.
 - [ ] Walls, doors, and the panel itself do not count as Active Tiles.
 - [ ] Control Panel I initial capacity: **64 Active Tiles (8×8)**.
-- [ ] Show the count as ACTIVE TILES / CAPACITY, for example 10 / 50 or 110 / 50.
+- [ ] Show the count as ACTIVE TILES / CAPACITY, for example 10 / 64 or 70 / 64.
 - [ ] If capacity is exceeded, the panel still displays section information, but the section cannot become functional.
 - [ ] Do not require airtight walls or a fully enclosed room merely for a section to be detected.
 
@@ -224,6 +226,17 @@ Implement and define:
 - [ ] **Aluminium Beam** — structural support element; define its footprint/placement and support effect.
 - [ ] **External Aluminium Frame** — external structure outside the ship's Hull floor capacity.
 - [ ] **Glass Wall** — non-airtight internal transparent partition in the first version; future material variants may include reinforced/bullet-resistant glass.
+
+### 3.2a Universal Aluminium Wall adjacency requirement
+
+- [ ] Every buildable module must be placed directly adjacent to at least one Aluminium Wall. Without an adjacent Aluminium Wall, a module cannot be constructed.
+- [ ] Apply the same placement requirement consistently to all modules, including Control Panels; retain the existing Control Panel directional/adjacency behaviour while generalizing the requirement.
+- [ ] Use the established grid-adjacency semantics from the existing Control Panel rule; do not silently introduce diagonal adjacency.
+- [ ] Enforce the rule in every relevant construction path, including normal placement and DEV MODE, unless a specific DEV-only bypass is explicitly intended and documented.
+- [ ] Before demolishing an Aluminium Wall, check all modules that depend on it. If demolition would leave any module without an adjacent Aluminium Wall, reject the demolition.
+- [ ] The player must first move or demolish the affected module, or otherwise provide another adjacent Aluminium Wall, before the original wall can be demolished.
+- [ ] A wall may be demolished when every nearby module that depends on it remains adjacent to another valid Aluminium Wall.
+- [ ] Preserve Aluminium Wall's existing structural and electrical/conduit roles. This rule adds a universal module-service/placement dependency; it does not replace those existing roles.
 
 ### 3.3 Doors
 
@@ -328,7 +341,7 @@ Do not invent conventional engine/mass behaviour for the Resonance Core. Its spe
 - [ ] Include the RC, battery, solar panels, basic lights, doors, and EVA module as required for the initial working ship.
 - [ ] Ensure the ship is a scientific exploration vessel, not a fighter or atmospheric lander.
 - [ ] Keep the external aluminium frame and solar array visually/functionally distinct from Hull floor capacity.
-- [ ] Confirm the layout is buildable and maintainable under the 50-tile initial panel capacity.
+- [ ] Confirm the layout is buildable and maintainable under the 64-tile initial panel capacity.
 
 ### 4.2 Complete JSON ship prefab
 
@@ -401,6 +414,9 @@ These are the currently agreed design decisions. Do not silently change them dur
 - The Resonance Core relocates the ship through a spatial binding with another body; it is not a conventional engine.
 - Hull is the outer airtight envelope. Hull integrity can degrade, but the design does not include the ship being physically torn apart in the conventional damage sense.
 - Aluminium internal walls are thick 1×1 construction blocks, not thin lines between floor tiles. They provide structural/service space and carry conduits.
+- Every buildable module requires adjacency to at least one Aluminium Wall. A module cannot be built without this service/structural connection. An Aluminium Wall cannot be demolished if doing so would leave a dependent module without another adjacent Aluminium Wall; the module must first be moved/demolished or supplied with an alternative adjacent wall.
+- Z+1 is the technical level derived from its parent deck Z+2; Z−1 is derived from parent deck Z0. Both remain full, non-buildable technical spaces. Their existing generation model is retained; synchronization additionally removes technical-deck tiles at coordinates occupied by Aluminium Walls on the corresponding parent deck. Z−2 is itself a technical level and has no further derived technical deck.
+- The technical access shaft remains 1×1 at the existing coordinates (64,64).
 - Aluminium can be sourced/refined from asteroid materials; asteroid compositions vary. Exact yields and recipes remain to be balanced.
 - Airtight construction uses rarer/mixed materials and should be more expensive than ordinary aluminium construction.
 - External aluminium frame is outside the ship's Hull floor-tile capacity and can support external equipment such as solar panels and sensors.
