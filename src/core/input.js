@@ -54,7 +54,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
         const walkable =
           deckId === 'Z0'
             ? Boolean(s.map.tiles[position]?.hull) && !isBlocked(s, x, y)
-            : Boolean(s.technicalDecks?.[deckId]?.tiles?.[position]);
+            : s.technicalDecks?.[deckId]?.tiles?.[position]?.walkable === true;
         if (walkable) candidates.set(position, { x, y });
       }
     }
@@ -64,7 +64,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
           Math.abs(a.x - s.pawn.x) +
           Math.abs(a.y - s.pawn.y) -
           (Math.abs(b.x - s.pawn.x) + Math.abs(b.y - s.pawn.y))
-      )[0] ?? { x: s.accessShaft.x + 1, y: s.accessShaft.y + 1 }
+      )[0] ?? null
     );
   }
   function facePawnToward(point) {
@@ -123,6 +123,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
     const deck = event.target.closest('[data-shaft-deck]')?.dataset.shaftDeck;
     if (deck && s.pawn.selected) {
       const destination = shaftArrivalTile(deck);
+      if (!destination) { closeShaftMenu(); note('NO WALKABLE SHAFT EXIT · ' + deck); return; }
       s.activeTool = null;
       s.selectedObject = null;
       closeShaftMenu();
@@ -232,8 +233,8 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
         const deck = s.technicalDecks?.[s.activeDeck];
         const tile = deck?.tiles[key(p.x, p.y)];
         const shaft = deck?.shaft.some((point) => point.x === p.x && point.y === p.y);
-        inspector.innerHTML = '<strong>' + (tile ? 'SHIP HULL' : shaft ? 'CENTRAL SHAFT' : 'OUTSIDE DECK FOOTPRINT') + '</strong><br>' +
-          (tile ? 'Undamageable · Non-buildable · No integrity' : shaft ? '1 × 1 vertical access shaft · ladder and pressure-sealed hatch' : 'Derived directly from Z0 footprint') + '<br>ENVIRONMENT · ' + (deck?.environmentTag ?? 'N/A') +
+        inspector.innerHTML = '<strong>' + (tile?.type === 'HULL_FLOOR' ? 'SERVICE TUNNEL · WALKABLE' : tile?.type === 'HULL_TILE' ? 'STRUCTURAL HULL · BLOCKED' : tile ? 'SHIP HULL' : shaft ? 'CENTRAL SHAFT' : 'OUTSIDE DECK FOOTPRINT') + '</strong><br>' +
+          (tile ? (tile.walkable === true ? 'Walkable service floor · Undamageable · Non-buildable' : 'Non-walkable hull · Undamageable · Non-buildable') : shaft ? '1 × 1 vertical access shaft · ladder and pressure-sealed hatch' : 'Derived directly from Z0 footprint') + '<br>ENVIRONMENT · ' + (deck?.environmentTag ?? 'N/A') +
           '<br>LEVEL ' + s.activeDeck + ' · POSITION ' + p.x + ', ' + p.y;
       } else {
         const t = s.map.tiles[key(p.x, p.y)],
