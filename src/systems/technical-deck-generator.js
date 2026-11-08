@@ -41,16 +41,24 @@ export function createTechnicalDecks(zeroLevelTiles, objects = {}) {
         powerRouteCells.add(key(x, y));
   }
 
+  // A perimeter cell can carry power without creating an accessible service tunnel.
+  // Treat any Z0 hull cell touching exterior space as part of the outer boundary.
+  const isExteriorBoundary = (position) => {
+    const [x, y] = position.split(',').map(Number);
+    return [[1, 0], [-1, 0], [0, 1], [0, -1]]
+      .some(([dx, dy]) => !footprintSet.has(key(x + dx, y + dy)));
+  };
+
   return Object.fromEntries(
     TECHNICAL_DECK_LEVELS.map((level) => {
       const shaftSet = new Set(shaft.map(({ x, y }) => key(x, y)));
       const tiles = {};
       for (const position of footprint) {
         if (shaftSet.has(position)) continue;
-        const isPowerRouteFloor = level === 'Z-1' && powerRouteCells.has(position);
+        const isPowerRouteFloor = level === 'Z-1' && powerRouteCells.has(position) && !isExteriorBoundary(position);
         tiles[position] = level === 'Z-1'
           ? {
-              type: isPowerRouteFloor ? 'SHIP_HULL_FLOOR' : 'HULL_TILE',
+              type: isPowerRouteFloor ? 'HULL_FLOOR' : 'HULL_TILE',
               material: 'SHIP_HULL',
               buildable: false,
               demolishable: false,
