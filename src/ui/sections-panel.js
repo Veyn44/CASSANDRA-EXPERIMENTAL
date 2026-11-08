@@ -43,8 +43,8 @@ export function createSectionsPanel(root, s, onChange) {
       return;
     }
     root.hidden = false;
-    const data = detectSections(s),
-      deckLevel = s.activeDeck ?? 'Z0',
+    const deckLevel = s.activeDeck ?? 'Z0',
+      data = detectSections(s),
       technicalDeck = deckLevel === 'Z0' ? null : s.technicalDecks?.[deckLevel],
       deckData = deckLevel === 'Z0' ? data : detectTechnicalDeckSections(s, deckLevel),
       selected = deckData.byId[s.sectionsUi.selectedSectionId] ?? null;
