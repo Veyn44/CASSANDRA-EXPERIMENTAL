@@ -121,7 +121,7 @@ Complete the basic ship systems and integrate them into the turn simulation. The
 
 - [ ] Pawn occupies a 1×1 tile.
 - [ ] One turn represents approximately 12 hours; the existing 12 AP per turn remains the action budget.
-- [ ] Base pawn health is 100 HP.
+- [x] Starting pawn Veyn has 20 / 20 HP; future pawn creation will define its own health maximum.
 - [ ] Any environment outside OPTIMAL can cause health loss. Damage depends on pressure, atmosphere and temperature.
 - [ ] Exact HP damage rates for each environmental state remain to be balanced and specified.
 - [ ] At 20 HP or less (20% of base maximum health), the pawn enters `INCAPACITATED`.
