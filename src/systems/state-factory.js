@@ -1,10 +1,10 @@
 import { createGameConfig } from '../core/game-config.js';
 import { advanceEnvironment } from './section-manager.js';
+import { createTechnicalDecks } from './technical-deck-generator.js';
 import {
-  createTechnicalDecks,
   DECK_ENVIRONMENT_TAGS,
-  TECHNICAL_DECK_LEVELS as DECK_LEVELS,
-} from './technical-deck-generator.js';
+  FLOOR_LEVELS as DECK_LEVELS,
+} from '../ship-floors/floor-registry.js';
 import { syncAccessShaftPressureLocks } from './access-shaft-system.js';
 import { createBridgeDevScenario } from '../dev/bridge-dev-scenario.js';
 const key = (x, y) => x + ',' + y;
