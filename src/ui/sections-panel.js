@@ -7,6 +7,7 @@ import { executeShipControlAction } from '../actions/ship-control/action-executo
 import { getShipControlAction } from '../actions/ship-control/action-registry.js';
 import { detectTechnicalDeckSections } from '../systems/technical-deck-sections.js';
 import { getActiveDeckObjects } from '../systems/prefab-manager.js';
+import { getControlDeviceContext, canAccessSection } from '../actions/ship-control/control-access.js';
 const esc = (v) =>
   String(v ?? '').replace(
     /[&<>"']/g,
@@ -21,9 +22,11 @@ const DIRS = [
 ];
 export function createSectionsPanel(root, s, onChange) {
   let open = false,
-    report = null;
+    report = null,
+    control = null;
   s.sectionsUi ??= { selectedPanelId: null, selectedSectionId: null };
   function selectSection(id) {
+    if (control?.scope === 'ONE_SECTION' && id !== control.sectionId) return;
     s.sectionsUi.selectedSectionId = id;
     s.sectionsUi.selectedPanelId =
       (s.activeDeck === 'Z0' ? detectSections(s) : detectTechnicalDeckSections(s, s.activeDeck)).panels.find((p) => p.sectionId === id)?.id ?? null;
@@ -31,8 +34,10 @@ export function createSectionsPanel(root, s, onChange) {
     render();
   }
   function selectPanel(id) {
-    const data = s.activeDeck === 'Z0' ? detectSections(s) : detectTechnicalDeckSections(s, s.activeDeck),
+    const activeLevel = control?.scope === 'ONE_SECTION' ? control.deckId : s.activeDeck;
+    const data = activeLevel === 'Z0' ? detectSections(s) : detectTechnicalDeckSections(s, activeLevel),
       panel = data.panels.find((v) => v.id === id);
+    if (control?.scope === 'ONE_SECTION' && panel?.sectionId !== control.sectionId) return;
     s.sectionsUi.selectedPanelId = id;
     s.sectionsUi.selectedSectionId = panel?.sectionId ?? null;
     report = null;
@@ -44,12 +49,16 @@ export function createSectionsPanel(root, s, onChange) {
       return;
     }
     root.hidden = false;
-    const deckLevel = s.activeDeck ?? 'Z0',
+    const deckLevel = control?.scope === 'ONE_SECTION' ? control.deckId : s.activeDeck ?? 'Z0',
       data = detectSections(s),
       technicalDeck = deckLevel === 'Z0' ? null : s.technicalDecks?.[deckLevel],
       deckData = deckLevel === 'Z0' ? data : detectTechnicalDeckSections(s, deckLevel),
-      selected = deckData.byId[s.sectionsUi.selectedSectionId] ?? null;
-    const panels = deckData.panels;
+      selectedId = control?.scope === 'ONE_SECTION' ? control.sectionId : s.sectionsUi.selectedSectionId,
+      selected = deckData.byId[selectedId] ?? null;
+    if (control?.scope === 'ONE_SECTION') s.sectionsUi.selectedSectionId = control.sectionId;
+    const panels = control?.scope === 'ONE_SECTION'
+      ? deckData.panels.filter((panel) => panel.sectionId === control.sectionId)
+      : deckData.panels;
     const info = deckLevel === 'Z0'
       ? selected ? getSectionInfo(selected) : getVacuumInfo()
       : {
@@ -79,7 +88,7 @@ export function createSectionsPanel(root, s, onChange) {
     const width = Math.max(1, maxX - minX + 1),
       height = Math.max(1, maxY - minY + 1),
       grid = [];
-    const vacuumSelected = s.sectionsUi.selectedSectionId == null;
+    const vacuumSelected = control?.scope !== 'ONE_SECTION' && s.sectionsUi.selectedSectionId == null;
     for (let y = minY; y <= maxY; y++)
       for (let x = minX; x <= maxX; x++) {
         const tileKey = x + ',' + y;
@@ -91,7 +100,11 @@ export function createSectionsPanel(root, s, onChange) {
           const shaft = technicalDeck?.shaft.some((point) => point.x === x && point.y === y);
           const sectionId = deckData.tileToSection[tileKey];
           const serviceFloor = technicalDeck?.tiles?.[tileKey]?.walkable === true;
-          if (serviceFloor) grid.push('<button class="section-map-cell ' + (sectionId === s.sectionsUi.selectedSectionId ? 'selected' : sectionId ? 'section-cell' : 'unassigned') + '" data-section="' + esc(sectionId ?? '') + '" title="' + esc(sectionId ?? 'POWER ROUTE') + '">' + (panels.some((panel) => panel.x === x && panel.y === y) ? '⌖' : '') + '</button>');
+          if (serviceFloor) {
+            const allowed = canAccessSection(control, deckLevel, sectionId);
+            const cell = '<span class="section-map-cell ' + (sectionId === selectedId ? 'selected' : sectionId ? 'section-cell' : 'unassigned') + '" title="' + esc(sectionId ?? 'POWER ROUTE') + '">' + (panels.some((panel) => panel.x === x && panel.y === y) ? '⌖' : '') + '</span>';
+            grid.push(allowed ? '<button class="section-map-cell ' + (sectionId === selectedId ? 'selected' : sectionId ? 'section-cell' : 'unassigned') + '" data-section="' + esc(sectionId ?? '') + '" title="' + esc(sectionId ?? 'POWER ROUTE') + '">' + (panels.some((panel) => panel.x === x && panel.y === y) ? '⌖' : '') + '</button>' : '<div class="section-map-cell unassigned" title="RESTRICTED SECTION"></div>');
+          }
           else grid.push('<div class="section-map-cell ' + (shaft ? 'technical-shaft-cell' : 'technical-hull-cell') + '" title="' + (shaft ? 'CENTRAL SHAFT' : 'STRUCTURAL HULL') + '"></div>');
           continue;
         }
@@ -125,10 +138,11 @@ export function createSectionsPanel(root, s, onChange) {
           );
           continue;
         }
+        const allowed = canAccessSection(control, deckLevel, id);
         const cls =
-          id === s.sectionsUi.selectedSectionId ? 'selected' : id ? 'section-cell' : 'unassigned';
+          id === selectedId ? 'selected' : id ? 'section-cell' : 'unassigned';
         grid.push(
-          '<button class="section-map-cell ' +
+          allowed ? '<button class="section-map-cell ' +
             cls +
             edgeClass +
             '" data-section="' +
@@ -137,7 +151,7 @@ export function createSectionsPanel(root, s, onChange) {
             esc(id ?? 'UNASSIGNED') +
             '">' +
             (panel ? '⌖' : '') +
-            '</button>'
+            '</button>' : '<div class="section-map-cell unassigned" title="RESTRICTED SECTION"></div>'
         );
       }
     const existingOrder = s.sectionsUi.panelOrder ?? [];
@@ -212,7 +226,7 @@ export function createSectionsPanel(root, s, onChange) {
     const temperature = info.temperature == null ? 'UNMAINTAINED' : info.temperature + ' °C';
     root.innerHTML =
       '<div class="sections-window"><header class="sections-header"><div><small>CASSANDRA · COMMAND SYSTEM</small><h2>SECTION CONTROL</h2></div><button data-close aria-label="Close">×</button></header><nav class="sections-deck-tabs" aria-label="Select ship deck">' +
-      DECK_LEVELS.map((level) => '<button data-deck="' + level + '" class="' + (deckLevel === level ? 'active' : '') + '">' + level + '</button>').join('') +
+      DECK_LEVELS.map((level) => '<button data-deck="' + level + '" ' + (control?.scope === 'ONE_SECTION' && level !== control.deckId ? 'disabled title="LOCAL CONTROL · SECTION ONLY" ' : '') + 'class="' + (deckLevel === level ? 'active' : '') + '">' + level + '</button>').join('') +
       '</nav><div class="sections-layout"><aside class="sections-panel-list"><h3>CONTROL PANELS</h3>' +
       (panelRows || '<p class="sections-empty">NO CONTROL PANELS INSTALLED</p>') +
       '</aside><section class="sections-blueprint"><h3>' + (deckLevel === 'Z0' ? 'SHIP BLUEPRINT' : 'DECK BLUEPRINT') + '</h3><div class="section-map" style="grid-template-columns:repeat(' +
@@ -253,7 +267,7 @@ export function createSectionsPanel(root, s, onChange) {
         ? '<dt>CRITICAL BOUNDARIES</dt><dd>' + info.criticalWalls + '</dd>'
         : '') +
       '</dl></div>' +
-      (selected && deckLevel === 'Z0'
+      (selected && (control?.scope === 'ALL_SECTIONS' || canAccessSection(control, deckLevel, selected.id)) && deckLevel === 'Z0'
         ? (() => {
             const action = getShipControlAction('COMPLETE_SCAN');
             return '<div class="section-actions"><h3>AVAILABLE ACTIONS</h3><button data-action="' + action.id + '">' + action.label + ' <b>' + action.apCost + ' AP</b></button></div>';
@@ -330,6 +344,7 @@ export function createSectionsPanel(root, s, onChange) {
           section: selected,
           panelId: s.sectionsUi.selectedPanelId,
           deckId: deckLevel,
+          control,
         });
         if (result.ok && result.actionId === 'COMPLETE_SCAN') report = result;
         onChange(result.message);
@@ -339,8 +354,27 @@ export function createSectionsPanel(root, s, onChange) {
   }
   return {
     open() {
+      control = null;
       open = true;
       render();
+    },
+    openFromDevice(device, deckId) {
+      control = getControlDeviceContext(s, device, deckId);
+      if (!control) return false;
+      if (control.scope === 'ONE_SECTION') {
+        s.activeDeck = control.deckId;
+        s.sectionsUi.selectedSectionId = control.sectionId;
+        s.sectionsUi.selectedPanelId = control.deviceId;
+      } else {
+        s.activeDeck = 'Z0';
+        const data = detectSections(s);
+        s.sectionsUi.selectedSectionId = data.sections[0]?.id ?? null;
+        s.sectionsUi.selectedPanelId = data.sections[0]?.panels?.[0]?.id ?? null;
+      }
+      report = null;
+      open = true;
+      render();
+      return true;
     },
     close() {
       open = false;
@@ -351,6 +385,7 @@ export function createSectionsPanel(root, s, onChange) {
       render();
     },
     selectPanel(id) {
+      control = null;
       selectPanel(id);
       open = true;
       render();
