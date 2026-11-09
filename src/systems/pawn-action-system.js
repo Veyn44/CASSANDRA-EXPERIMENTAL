@@ -17,8 +17,7 @@ export function getActionFailureChance(pawn, malfunctionChance = 0) {
   return Math.min(100, restChance + faultChance);
 }
 
-export function trySpendActionAP(state, apCost = 1, { malfunctionChance = 0, random = Math.random } = {}) {
-  const pawn = state?.pawn;
+export function trySpendActionAP(state, apCost = 1, { pawn = state?.pawn, malfunctionChance = 0, random = Math.random } = {}) {
   const cost = Math.max(0, Math.floor(Number(apCost) || 0));
   if (!pawn || pawn.op < cost) {
     return { ok: false, failed: false, reason: 'NOT_ENOUGH_AP', message: 'NOT ENOUGH AP · ' + cost + ' AP REQUIRED' };
