@@ -94,7 +94,7 @@ export function createCrewDeckPanels(state, refresh, note, onPawnInfoClick) {
         String(pawn.level).padStart(2, '0') +
         '</small><span class="crew-stats"><i>HP <b>' +
         pawn.health +
-        '%</b></i><i>AP <b>' +
+        ' / ' + (pawn.maxHealth ?? 20) + '</b></i><i>AP <b>' +
         pawn.op +
         ' / ' +
         pawn.maxOP +
