@@ -274,9 +274,9 @@ export function createSectionsPanel(root, s, onChange) {
           })()
         : '') +
       reportHtml +
-      '</aside></div><footer class="sections-footer"><span>LOCAL CONTROL · ' +
-      panels.length +
-      ' PANEL(S)</span><span>OPERATIONAL POINTS · ' +
+      '</aside></div><footer class="sections-footer"><span>' +
+      (control?.scope === 'ALL_SECTIONS' ? 'BRIDGE CONSOLE · GLOBAL ACCESS' : control?.scope === 'ONE_SECTION' ? 'LOCAL CONTROL · ' + control.sectionId : 'SECTION DIRECTORY · ' + panels.length + ' PANEL(S)') +
+      '</span><span>OPERATIONAL POINTS · ' +
       s.pawn.op +
       ' / ' +
       s.pawn.maxOP +
