@@ -13,7 +13,7 @@ export function createPawnInfoPanel(root, state) {
         '<div class="pawn-info-status ' + condition.toLowerCase() + '"><span>CONDITION</span><strong>' + condition + '</strong></div>' +
         '<div class="pawn-info-grid">' +
           metric('LEVEL', String(pawn.level ?? 1).padStart(2, '0')) +
-          metric('HEALTH', (pawn.health ?? 100) + ' / 100') +
+          metric('HEALTH', (pawn.health ?? 20) + ' / ' + (pawn.maxHealth ?? 20)) +
           metric('ACTION POINTS', (pawn.op ?? 0) + ' / ' + (pawn.maxOP ?? 12)) +
           metric('REST', pawn.rest + ' / 15') +
           metric('REST STATE', restState.label) +
