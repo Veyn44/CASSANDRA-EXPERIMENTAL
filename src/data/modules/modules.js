@@ -40,15 +40,16 @@ export const MODULES = [
   {
     ...base,
     id: 'MOD0005',
-    legacyId: 'ship-computer',
-    name: 'Ship Computer',
+    legacyId: 'bridge-console',
+    aliases: ['ship-computer'],
+    name: 'Bridge Console',
     category: 'core-systems',
     subcategory: 'control',
     type: 'module',
     w: 2,
     h: 2,
     description: 'Central ship data and control interface.',
-    function: 'Ship systems control',
+    function: 'Central ship systems control',
     placement: 'hull',
   },
   {
@@ -184,7 +185,12 @@ export const MODULE_BY_ID = Object.freeze(
   Object.fromEntries(MODULES.map((item) => [item.id, item]))
 );
 export const MODULE_BY_LEGACY_ID = Object.freeze(
-  Object.fromEntries(MODULES.map((item) => [item.legacyId, item]))
+  Object.fromEntries(
+    MODULES.flatMap((item) => [
+      [item.legacyId, item],
+      ...(item.aliases ?? []).map((alias) => [alias, item]),
+    ])
+  )
 );
 export function getModule(id) {
   return MODULE_BY_ID[id] ?? MODULE_BY_LEGACY_ID[id] ?? null;
