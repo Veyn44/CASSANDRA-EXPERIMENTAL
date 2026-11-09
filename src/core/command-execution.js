@@ -52,12 +52,12 @@ export function createCommandExecutor(s, refresh, note, objectAt, signal, onDevi
     if (!s.pawn.selected) { note('SELECT THE RESEARCHER FIRST'); return; }
     const targetObject = objectAt(p, targetDeck);
     if (targetObject && targetObject.built !== false
-      && (targetObject.type === 'MOD0014' || targetObject.type === 'MOD0005')) {
+      && (targetObject.type === 'MOD0014' || targetObject.type === 'MOD0005' || (targetObject.type === 'MOD0006' && targetDeck === 'Z0'))) {
       const path = deviceInteractionPath(targetObject, targetDeck);
       if (!path) { note('NO ACCESSIBLE ROUTE TO CONTROL DEVICE'); return; }
-      note('RESEARCHER MOVING TO ' + (targetObject.type === 'MOD0005' ? 'BRIDGE CONSOLE' : 'CONTROL PANEL'));
+      note('RESEARCHER MOVING TO ' + (targetObject.type === 'MOD0005' ? 'BRIDGE CONSOLE' : targetObject.type === 'MOD0014' ? 'CONTROL PANEL' : 'SLEEPING MODULE'));
       walk(path, () => {
-        note('CONTROL DEVICE REACHED');
+        note(targetObject.type === 'MOD0006' ? 'SLEEPING MODULE REACHED' : 'CONTROL DEVICE REACHED');
         onDeviceInteract?.(targetObject, targetDeck);
         refresh();
       });
