@@ -171,13 +171,13 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
         s.pawn.selected = true;
         s.selectedObject = null;
         const cameraAlreadyFocused =
-          Math.abs(s.camera.x - s.pawn.x) < 0.25 &&
-          Math.abs(s.camera.y - s.pawn.y) < 0.25;
+          Math.abs(s.camera.x - pawnRenderPosition.x) < 0.25 &&
+          Math.abs(s.camera.y - pawnRenderPosition.y) < 0.25;
         if (cameraAlreadyFocused) {
           onPawnInfoClick?.(s.pawn);
         } else {
-          s.camera.x = s.pawn.x;
-          s.camera.y = s.pawn.y;
+          s.camera.x = pawnRenderPosition.x;
+          s.camera.y = pawnRenderPosition.y;
           refresh();
           note('CAMERA FOCUSED · ' + s.pawn.name.toUpperCase() + ' · CLICK AGAIN FOR PAWN INFO');
         }
