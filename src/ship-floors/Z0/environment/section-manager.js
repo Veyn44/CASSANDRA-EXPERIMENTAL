@@ -358,7 +358,17 @@ function degradeExposedAluminium(s, data, integrityContext) {
   for (const [position, tile] of Object.entries(s.map.tiles)) {
     if (!tile?.aluminiumWall) continue;
     const [x, y] = position.split(',').map(Number);
-    if (shouldDegradeAt(x, y))
+    // Aluminium perimeter walls also degrade when they directly border a
+    // compromised titanium hull wall, even if no interior section touches them.
+    const adjacentDamagedTitaniumWall = DIRS.some(([dx, dy]) => {
+      const neighbor = s.map.tiles[key(x + dx, y + dy)];
+      return Boolean(
+        neighbor?.wall &&
+        !neighbor.aluminiumWall &&
+        wallIntegrity(neighbor) < 75
+      );
+    });
+    if (shouldDegradeAt(x, y) || adjacentDamagedTitaniumWall)
       applyIntegrityChange(
         {
           get integrity() {
