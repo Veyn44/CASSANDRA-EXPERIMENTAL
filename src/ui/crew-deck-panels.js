@@ -1,10 +1,6 @@
-const DECKS = [
-  { id: 'Z+2', label: 'Z +2' },
-  { id: 'Z+1', label: 'Z +1' },
-  { id: 'Z0', label: 'Z 0' },
-  { id: 'Z-1', label: 'Z -1' },
-  { id: 'Z-2', label: 'Z -2' },
-];
+import { FLOOR_LEVELS } from '../ship-floors/floor-registry.js';
+
+const DECKS = FLOOR_LEVELS.map((id) => ({ id, label: id.replace('Z', 'Z ') }));
 const PAWN_COLOR = '#d76b73';
 
 function deckFootprint(state, deckId) {
