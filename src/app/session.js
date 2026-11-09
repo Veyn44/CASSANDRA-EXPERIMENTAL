@@ -41,7 +41,7 @@ export function startGameSession(mode, { $, canvas, refresh, noteText }) {
     refresh();
   });
   const crewDeckPanels = dev
-    ? createCrewDeckPanels(state, refresh, noteText)
+    ? createCrewDeckPanels(state, refresh, noteText, () => pawnInfoPanel.open())
     : null;
   $('#deck-panel').hidden = !dev;
   $('#crew-panel').hidden = !dev;
