@@ -91,7 +91,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
         FLOOR_LEVELS.filter((deck) => deck !== (s.pawn.deck ?? 'Z0'))
           .map((deck) => '<button type="button" data-shaft-deck="' + deck + '">' + deck + '</button>').join('') +
         '</div>'
-      : '<div class="shaft-lock-reason">SELECT THE RESEARCHER FIRST</div>';
+      : '<div class="shaft-lock-reason">SELECT THE PAWN FIRST</div>';
     shaftMenu.style.left = Math.min(event.clientX, window.innerWidth - 190) + 'px';
     shaftMenu.style.top = Math.min(event.clientY, window.innerHeight - 150) + 'px';
     shaftMenu.hidden = false;
@@ -111,7 +111,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
       s.activeTool = null;
       s.selectedObject = null;
       closeShaftMenu();
-      note('RESEARCHER ROUTING TO ' + deck);
+      note(s.pawn.name.toUpperCase() + ' ROUTING TO ' + deck);
       executeCommand(destination, deck);
     }
   });
