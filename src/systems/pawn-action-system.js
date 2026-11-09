@@ -88,6 +88,12 @@ export function resolvePawnRestForTurn(pawn) {
   pawn.rest = Math.max(-30, Math.min(15, (Number(pawn.rest ?? 15) - 3) + sleepHours));
   pawn.pendingSleepHours = 0;
   pawn.sleepHoursThisTurn = 0;
+  if (pawn.sleepWakePosition) {
+    pawn.x = pawn.sleepWakePosition.x;
+    pawn.y = pawn.sleepWakePosition.y;
+    pawn.deck = pawn.sleepWakePosition.deck ?? 'Z0';
+  }
+  pawn.sleepWakePosition = null;
   pawn.sleepState = 'AWAKE';
   pawn.sleepLocation = null;
   pawn.sleepingInModuleId = null;
