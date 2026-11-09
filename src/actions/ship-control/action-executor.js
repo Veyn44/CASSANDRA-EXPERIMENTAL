@@ -1,4 +1,5 @@
 import { completeSectionScan } from '../../systems/section-manager.js';
+import { ventSection } from '../../systems/atmosphere-control.js';
 import { getShipControlAction } from './action-registry.js';
 import { canAccessSection } from './control-access.js';
 
@@ -6,7 +7,7 @@ export function executeShipControlAction(state, actionId, context = {}) {
   const action = getShipControlAction(actionId);
   if (!action) return { ok: false, message: 'UNKNOWN SHIP CONTROL ACTION' };
 
-  if (action.scope === 'LOCAL_SECTION' && !canAccessSection(context.control, context.deckId, context.section?.id)) {
+  if ((action.scope === 'LOCAL_SECTION' || action.scope === 'AUTHORIZED_SECTION') && !canAccessSection(context.control, context.deckId, context.section?.id)) {
     return { ok: false, message: 'CONTROL DEVICE NOT AUTHORIZED FOR THIS SECTION' };
   }
 
@@ -14,6 +15,9 @@ export function executeShipControlAction(state, actionId, context = {}) {
   switch (actionId) {
     case 'COMPLETE_SCAN':
       result = completeSectionScan(state, context.section);
+      break;
+    case 'VENT_SECTION':
+      result = ventSection(state, context.deckId, context.section);
       break;
     default:
       return { ok: false, message: 'SHIP CONTROL ACTION NOT IMPLEMENTED' };
