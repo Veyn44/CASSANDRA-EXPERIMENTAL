@@ -26,8 +26,8 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
   function inside(p) {
     return p.x >= 0 && p.y >= 0 && p.x < 256 && p.y < 128;
   }
-  function objectAt(p) {
-    return Object.values(getActiveDeckObjects(s)).find(
+  function objectAt(p, deckId = s.activeDeck) {
+    return Object.values(getActiveDeckObjects(s, deckId)).find(
       (o) => p.x >= o.x && p.y >= o.y && p.x < o.x + o.w && p.y < o.y + o.h
     );
   }
@@ -51,10 +51,16 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
         const position = key(x, y);
         if (shaftCells.some((shaftCell) => shaftCell.x === x && shaftCell.y === y))
           continue;
+        const occupiedByControlDevice = Object.values(getActiveDeckObjects(s, deckId)).some(
+          (object) => object.built !== false &&
+            (object.type === 'MOD0014' || object.type === 'MOD0005') &&
+            x >= object.x && y >= object.y &&
+            x < object.x + object.w && y < object.y + object.h
+        );
         const walkable =
-          deckId === 'Z0'
+          !occupiedByControlDevice && (deckId === 'Z0'
             ? Boolean(s.map.tiles[position]?.hull) && !isBlocked(s, x, y)
-            : s.technicalDecks?.[deckId]?.tiles?.[position]?.walkable === true;
+            : s.technicalDecks?.[deckId]?.tiles?.[position]?.walkable === true);
         if (walkable) candidates.set(position, { x, y });
       }
     }
