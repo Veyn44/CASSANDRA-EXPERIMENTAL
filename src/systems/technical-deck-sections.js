@@ -85,15 +85,7 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
         sectionId: z0Section?.id ?? null,
         shaftOpen: !shaftClosed,
       };
-      const ventOverride = state.technicalDeckEnvironmentOverrides?.[deckId]?.[section.id];
-      if (ventOverride && ventOverride.turn === state.turn) {
-        section.airtightness = 'SEALED';
-        section.environment = 'VACUUM';
-        section.atmosphere = 'NONE';
-        section.pressure = 'VACUUM';
-        section.temperature = -270;
-        section.vented = true;
-      } else if (shaftClosed) {
+      if (shaftClosed) {
         // A closed shaft seals the boundary; it does not erase the pressure state
         // maintained independently on either side.
         section.airtightness = 'SEALED';
@@ -110,6 +102,15 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
   }
   for (const section of sections) {
     const activePanel = panels.find((panel) => panel.sectionId === section.id && panel.active);
+    const ventOverride = state.technicalDeckEnvironmentOverrides?.[deckId]?.[section.id];
+    if (ventOverride && ventOverride.turn === state.turn) {
+      section.airtightness = section.airtightness ?? 'STABLE';
+      section.environment = 'VACUUM';
+      section.atmosphere = 'NONE';
+      section.pressure = 'VACUUM';
+      section.temperature = -270;
+      section.vented = true;
+    }
     section.hasActivePanel = Boolean(activePanel);
     section.activePanelId = activePanel?.id ?? null;
     section.stability = activePanel ? 'STABLE' : 'UNSTABILIZED';
