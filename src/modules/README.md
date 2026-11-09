@@ -4,26 +4,38 @@ Prefab definitions remain in `src/data/`. This directory contains behavior attac
 
 ## Layout
 
-- `module-contract.js`: shared runtime implementation contract.
+- `module-contract.js`: initial shared runtime implementation interface.
 - `module-registry.js`: ID-to-runtime registry shared by modules and structures.
 - `modules/`: individual MOD runtime implementations.
-- `structures/doors/`: door runtime implementation.
+- `structures/doors/`: door-specific runtime implementation.
 
 Build Catalog categories are UI groupings; they do not define runtime folders.
 
 ## Instance state
 
-Runtime state belongs to a placed object, not to a prefab definition. The future integration layer should store it under the placed object's stable instance ID, for example `gameState.moduleStates[object.id]`. The same prefab can therefore have multiple independent runtime instances.
+Runtime state belongs to a placed object, not to a prefab definition. The planned common namespace is `gameState.objectRuntimeStates[object.id]`, keyed by the placed object's unique instance ID. This name covers both MOD modules and STR structures. The final state integration point must be verified against the actual game-state and save/load architecture before implementation.
 
-## Lifecycle contract
+Physical object facts already held by the placed object—such as location, dimensions, material family, construction state and integrity—must not be duplicated in module runtime state.
 
-An implementation is created with `defineModuleRuntime({ id, createState, ...hooks })` and registered with `registerModuleRuntime(runtime)`.
+## Capabilities
 
-- `createState(context)` is required and returns the initial state for one placed instance.
-- `onTurnStart(context)` and `onTurnEnd(context)` are optional deterministic turn hooks.
-- `getActions(context)` optionally returns the actions currently available from the instance.
-- `executeAction(context, actionId, payload)` optionally handles one of those actions.
+Not every runtime needs every capability. Capacity/slots, physical interaction, actions, automatic behavior, remote control, turn hooks, fault reporting and a technical-deck service link are optional. A door does not need pawn capacity; a Medical Chamber may have independently occupied treatment slots.
 
-The context shape and turn ordering must be defined by the integration layer before hooks are called. Implementations must not own UI, alter prefab definitions, or bypass shared systems such as integrity, environment, navigation or power.
+Opening a menu is free. AP is charged only by a selected action through the shared command/AP flow. Actions declare whether they are available physically, through CP, or through CB. Physical-only actions must not be exposed as remote actions. CP and CB retain their existing authority scopes.
 
-No prefab runtimes are registered in this foundation commit. Existing gameplay is not connected to this layer yet.
+## Lifecycle and shared systems
+
+The initial implementation uses `defineModuleRuntime({ id, createState, ...hooks })` and `registerModuleRuntime(runtime)`.
+
+- `createState(context)` is required and creates initial state for one placed instance.
+- `onTurnStart(context)` and `onTurnEnd(context)` are optional lifecycle hooks.
+- `getActions(context)` optionally returns currently available actions.
+- `executeAction(context, actionId, payload)` optionally handles an action.
+
+The integration layer must define context shape and exact turn ordering before hooks are called. Modules query shared systems and must not duplicate AP, pawn attributes, integrity, environment, navigation, sections or power-route rules. Do not add an independent action dispatcher if the existing command flow can be extended safely.
+
+## Design specification
+
+See [Module Runtime Contract 2.0](../../docs/MODULE-RUNTIME-CONTRACT-2.0.md) for the approved target design, including the unified Control Menu, diagnostics/status concept, technical service points, preservation constraints and the separate Z-1 to Z0 navigation-menu bug.
+
+No prefab runtimes are registered in this foundation stage. Existing gameplay is not connected to this layer yet.
