@@ -20,7 +20,7 @@ export function createControlMenu(root, state, onChange) {
   const views = [...root.querySelectorAll('[data-control-view]')];
   const tabs = [...root.querySelectorAll('[data-control-tab]')];
   const sections = createSectionsTab(root.querySelector('[data-control-view="sections"]'), state, onChange);
-  const modules = createModulesTab(root.querySelector('[data-control-view="modules"]'));
+  const modules = createModulesTab(root.querySelector('[data-control-view="modules"]'), state, onChange);
   const status = createStatusTab(root.querySelector('[data-control-view="status"]'));
   let open = false;
   let activeTab = 'sections';
@@ -52,6 +52,13 @@ export function createControlMenu(root, state, onChange) {
       open = true;
       sections.open();
       render();
+    },
+    openFromModule(module) {
+      modules.open(module);
+      activeTab = 'modules';
+      open = true;
+      render();
+      return true;
     },
     openFromDevice(device, deckId) {
       const opened = sections.openFromDevice(device, deckId);
