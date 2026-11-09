@@ -1,4 +1,4 @@
-import { createSectionsPanel } from '../ui/sections-panel.js';
+import { createControlMenu } from '../ui/control-menu/control-menu.js';
 import { createInitialState } from '../systems/state-factory.js';
 import { createRenderer } from '../core/renderer.js';
 import { bindInput } from '../core/input.js';
@@ -31,7 +31,7 @@ export function startGameSession(mode, { $, canvas, refresh, noteText }) {
   );
 
   const devPanel = dev ? bindDevPanel(state, refresh, noteText) : null;
-  sectionsPanel = createSectionsPanel($('#sections-panel'), state, (message) => {
+  sectionsPanel = createControlMenu($('#sections-panel'), state, (message) => {
     noteText(message);
     refresh();
   });
