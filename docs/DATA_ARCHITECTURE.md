@@ -26,7 +26,7 @@ The UI groups items by category independently of their ID family. For example, d
 
 Current build families:
 
-- `MOD`: Resonance Core, Solar Panel, Ship Computer, Sleeping Module, Medical Chamber, EVA Suit Chamber, Material Tanks, Material Separator, Life Support Panel, Battery Storage.
+- `MOD`: Resonance Core, Solar Panel, Bridge Console, Sleeping Module, Medical Chamber, EVA Suit Chamber, Material Tanks, Material Separator, Life Support Panel, Battery Storage.
 - `STR`: External Frame, Airtight Door 1×1, Airtight Door 2×1, Basic Door 1×1, Basic Door 2×1.
 - `FUR`: Wall Light.
 
