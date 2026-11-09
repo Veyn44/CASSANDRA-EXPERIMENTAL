@@ -1,3 +1,4 @@
+import { getPawnCondition } from '../systems/pawn-action-system.js';
 import { validatePrefabPlacement, prefabSize, getBuildable, getActiveDeckObjects } from '../systems/prefab-manager.js';
 import { isBlocked } from '../systems/navigation.js';
 import { isCellVisible } from '../systems/visibility-manager.js';
@@ -340,7 +341,7 @@ export function createRenderer(canvas, s) {
         c.fill();
       }
       if (s.pawn.selected) {
-        c.strokeStyle = '#70f0a0';
+        c.strokeStyle = getPawnCondition(s.pawn) === 'CRITICAL' ? '#ef5964' : getPawnCondition(s.pawn) === 'DEFICIT' ? '#e6a047' : '#70f0a0';
         c.lineWidth = Math.max(3, z * 0.09);
         c.strokeRect(pawn.x + z * 0.06, pawn.y + z * 0.06, z * 0.88, z * 0.88);
       }
