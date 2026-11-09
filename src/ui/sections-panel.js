@@ -91,6 +91,15 @@ export function createSectionsPanel(root, s, onChange) {
     const vacuumSelected = control?.scope !== 'ONE_SECTION' && s.sectionsUi.selectedSectionId == null;
     const scan = s.sectionsUi.scan?.turn === s.turn && s.sectionsUi.scan.sectionId === selectedId ? s.sectionsUi.scan : null;
     const scanByPosition = new Map((scan?.entries ?? []).map((entry) => [entry.x + ',' + entry.y, entry]));
+    const scannedDoors = new Map((scan?.entries ?? []).filter((entry) => entry.targetKind === 'DOOR').map((entry) => [entry.targetId, entry]));
+    const doorsByPosition = new Map();
+    for (const door of Object.values(s.map.objects)) {
+      const scannedDoor = scannedDoors.get(door.id);
+      if (!scannedDoor || door.built === false) continue;
+      for (let dy = 0; dy < door.h; dy++)
+        for (let dx = 0; dx < door.w; dx++)
+          doorsByPosition.set((door.x + dx) + ',' + (door.y + dy), { door, scannedDoor, label: dx === 0 && dy === 0 });
+    }
     for (let y = minY; y <= maxY; y++)
       for (let x = minX; x <= maxX; x++) {
         const tileKey = x + ',' + y;
@@ -113,6 +122,13 @@ export function createSectionsPanel(root, s, onChange) {
         const id = data.tileToSection[tileKey],
           tile = s.map.tiles[tileKey];
         const panel = panels.find((p) => p.x === x && p.y === y);
+        const doorCell = doorsByPosition.get(tileKey);
+        if (doorCell) {
+          const { door, scannedDoor, label } = doorCell;
+          const integrityClass = scannedDoor.integrity < 50 ? ' integrity-critical' : scannedDoor.integrity < 75 ? ' integrity-caution' : ' integrity-good';
+          grid.push('<div class="section-map-cell section-door-scan-cell' + integrityClass + '" title="' + (door.type === 'STR0002' || door.type === 'STR0003' ? 'TITANIUM DOOR' : 'ALUMINIUM DOOR') + ' · ' + scannedDoor.integrity + '% INTEGRITY">' + (label ? scannedDoor.integrity + '%' : '') + '</div>');
+          continue;
+        }
         if (!tile?.hull) {
           const selectedVacuum = vacuumSelected && data.vacuumSet.has(tileKey);
           if (data.vacuumSet.has(tileKey))
