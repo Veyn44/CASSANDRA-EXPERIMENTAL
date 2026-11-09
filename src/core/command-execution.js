@@ -2,6 +2,7 @@ import { completePlanAction, completeModuleAction } from '../systems/constructio
 import { findDeckPath, findWorkPath, isBlocked, isDeckLocked } from '../systems/navigation.js';
 import { syncAccessShaftPressureLocks } from '../systems/access-shaft-system.js';
 import { getBuildable } from '../systems/prefab-manager.js';
+import { repairAt } from '../systems/repair-system.js';
 
 const key = (x, y) => x + ',' + y;
 
@@ -105,5 +106,28 @@ export function createCommandExecutor(s, refresh, note, objectAt, signal, onDevi
     note('RESEARCHER MOVING · NO AP COST');
     walk(path, () => { note('RESEARCHER ARRIVED · NO AP COST'); refresh(); });
   }
+  command.repair = (p) => {
+    if (!inside(p) || s.pawn.moving || (s.pawn.deck ?? 'Z0') !== 'Z0') return;
+    const scan = s.sectionsUi?.scan;
+    if (!scan || scan.turn !== s.turn) return;
+    const entry = scan.entries.find((item) => item.x === p.x && item.y === p.y && item.integrity < 100);
+    if (!entry) return;
+    let target = null, w = 1, h = 1;
+    if (entry.targetKind === 'DOOR') {
+      target = s.map.objects[entry.targetId];
+      w = target?.w ?? 1; h = target?.h ?? 1;
+    } else {
+      target = s.map.tiles[key(p.x, p.y)];
+    }
+    if (!target) { note('REPAIR TARGET NO LONGER EXISTS'); return; }
+    const path = findWorkPath(s, p.x, p.y, w, h);
+    if (!path) { note('NO ACCESSIBLE WORKING POSITION · REPAIR NOT POSSIBLE'); return; }
+    note('RESEARCHER MOVING TO REPAIR ' + entry.type);
+    walk(path.map((point) => ({ ...point, deck: 'Z0' })), () => {
+      const result = repairAt(s, p.x, p.y);
+      if (result.handled) note(result.message);
+      refresh();
+    });
+  };
   return command;
 }
