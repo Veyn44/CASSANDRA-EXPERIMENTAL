@@ -272,11 +272,14 @@ This step covers the basic ship systems and gameplay consequences listed above: 
 ## Pawn condition and Sleeping Module
 
 - [x] Add pawn-owned `rest` state with range -30..15; new pawns initialize at +15.
-- [x] Resolve baseline rest loss of 3 points per 12-hour turn and apply scheduled sleep at NEXT TURN.
-- [x] Add shared AP-action failure probabilities: Well Rested 0%, Deprived 20%, Exhausted 50%.
-- [x] Combine rest failure and a future supplied malfunction chance additively, capped at 100%.
-- [x] Route current Z0 construction, repair and section-scan AP actions through the shared action reliability system.
-- [x] Implement physical Z0 interaction and sleep scheduling for MOD0006.
-- [ ] Manually test Sleeping Module navigation, activation cost, duration/AP accounting and NEXT TURN rest resolution.
+- [x] Resolve baseline rest loss of 3 points per 12-hour turn and physical sleep at NEXT TURN.
+- [x] Deprived: 20% AP-action failure; Exhausted: 50% forced sleep chance during AP actions.
+- [x] Exhausted pawns that do not fall asleep execute the attempted action normally.
+- [x] Combine independent malfunction and Deprived failure chances additively, capped at 100%.
+- [x] Route Z0 and technical-deck section scans, construction and repair AP actions through the shared pawn action system.
+- [x] Implement physical MOD0006 bed interaction with one occupant, all remaining AP converted to sleep, visible lying pose and movement lock.
+- [x] Add Pawn Info panel with two-stage focus/click interaction.
+- [x] Show rest/sleep status in the sidebar and crew cards; condition frames use normal/deficit/critical severity.
+- [ ] Manually test bed occupancy, visible sleep pose, floor sleep, movement lock, NEXT TURN wake and rest resolution.
+- [ ] Implement physical carry/rescue by another entity for sleeping pawns.
 - [ ] Implement power-route malfunction detection and pass its chance into the shared action reliability system.
-- [ ] After MOD0006 is stable, create a dedicated Pawn Info menu for rest and other pawn attributes.
