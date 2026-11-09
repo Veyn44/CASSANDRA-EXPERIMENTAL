@@ -267,3 +267,16 @@ Complete the basic ship systems and integrate them into the turn simulation. The
 ## Scope boundary
 
 This step covers the basic ship systems and gameplay consequences listed above: solar power, Aluminium Wall electrical distribution, batteries, pawn survival, Wall Lights, ship visibility, doors, EVA and their integration into NEXT TURN. The existing simplified atmosphere, pressure and temperature model remains unchanged. Open design values must be specified before implementation; do not invent values while coding.
+
+
+## Pawn condition and Sleeping Module
+
+- [x] Add pawn-owned `rest` state with range -30..15; new pawns initialize at +15.
+- [x] Resolve baseline rest loss of 3 points per 12-hour turn and apply scheduled sleep at NEXT TURN.
+- [x] Add shared AP-action failure probabilities: Well Rested 0%, Deprived 20%, Exhausted 50%.
+- [x] Combine rest failure and a future supplied malfunction chance additively, capped at 100%.
+- [x] Route current Z0 construction, repair and section-scan AP actions through the shared action reliability system.
+- [x] Implement physical Z0 interaction and sleep scheduling for MOD0006.
+- [ ] Manually test Sleeping Module navigation, activation cost, duration/AP accounting and NEXT TURN rest resolution.
+- [ ] Implement power-route malfunction detection and pass its chance into the shared action reliability system.
+- [ ] After MOD0006 is stable, create a dedicated Pawn Info menu for rest and other pawn attributes.
