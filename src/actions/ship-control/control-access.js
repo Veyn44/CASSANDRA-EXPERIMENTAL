@@ -20,7 +20,6 @@ export function getControlDeviceContext(state, device, deckId = state.activeDeck
     : detectTechnicalDeckSections(state, deckId);
   const sectionId = data.tileToSection[device.x + ',' + device.y] ?? null;
   if (!sectionId) return null;
-  const localTiles = new Set(data.byId[sectionId].tiles.map((point) => point.x + ',' + point.y));
   const adjacentSectionIds = new Set();
   for (const point of data.byId[sectionId].tiles) {
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
