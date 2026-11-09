@@ -166,7 +166,8 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
         }
         return;
       }
-      if ((s.pawn.deck ?? 'Z0') === s.activeDeck && p.x === s.pawn.x && p.y === s.pawn.y) {
+      const pawnRenderPosition = s.pawn.sleepState === 'SLEEPING' && s.pawn.sleepLocation ? s.pawn.sleepLocation : s.pawn;
+      if ((s.pawn.deck ?? 'Z0') === s.activeDeck && p.x === pawnRenderPosition.x && p.y === pawnRenderPosition.y) {
         s.pawn.selected = true;
         s.selectedObject = null;
         const cameraAlreadyFocused =
