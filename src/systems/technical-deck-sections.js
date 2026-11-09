@@ -1,3 +1,4 @@
+import { detectSections } from './section-manager.js';
 const key = (x, y) => x + ',' + y;
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 const DIAGONALS = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
@@ -60,6 +61,47 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
       status: object.built === false ? 'BLUEPRINT' : !section ? 'INACTIVE' : section.tileCount > 64 ? 'INACTIVE' : section.panels[0] !== object ? 'INACTIVE' : 'ACTIVE',
       reason: object.built === false ? 'NOT BUILT' : !section ? 'NO POWER ROUTE' : section.tileCount > 64 ? 'CAPACITY EXCEEDED' : section.panels[0] !== object ? 'DUPLICATE PANEL' : '',
     });
+  }
+  // The access shaft is a vertical neighbor between Z0 and this technical deck.
+  // When either deck's shaft interlock is engaged, the opening is airtight; otherwise
+  // both sides share the live Z0 environment because they are one connected volume.
+  const shaftPoint = deck.shaft?.[0] ?? null;
+  if (shaftPoint) {
+    const shaftAccess = state.accessShaft?.decks ?? {};
+    const shaftClosed = Boolean(
+      shaftAccess.Z0?.manualLock || shaftAccess.Z0?.autoLock ||
+      shaftAccess[deckId]?.manualLock || shaftAccess[deckId]?.autoLock
+    );
+    const z0Data = detectSections(state);
+    const z0SectionId = z0Data.tileToSection[key(shaftPoint.x, shaftPoint.y)];
+    const z0Section = z0SectionId ? z0Data.byId[z0SectionId] : null;
+    const adjacentTechnicalSections = new Set(
+      DIRS.map(([dx, dy]) => tileToSection[key(shaftPoint.x + dx, shaftPoint.y + dy)])
+        .filter(Boolean)
+    );
+    for (const sectionId of adjacentTechnicalSections) {
+      const section = byId[sectionId];
+      section.verticalNeighbor = {
+        deckId: 'Z0',
+        sectionId: z0Section?.id ?? null,
+        shaftOpen: !shaftClosed,
+      };
+      if (shaftClosed) {
+        section.airtightness = 'SEALED';
+        section.environment = 'ISOLATED';
+        section.atmosphere = 'ISOLATED';
+        section.pressure = 'ISOLATED';
+        section.temperature = null;
+      } else if (z0Section) {
+        // An open shaft makes this section part of the same physical atmosphere as Z0.
+        section.airtightness = z0Section.airtightness;
+        section.environment = z0Section.environment;
+        section.atmosphere = z0Section.atmosphere;
+        section.pressure = z0Section.pressure;
+        section.temperature = z0Section.temperature;
+        section.sharedEnvironment = true;
+      }
+    }
   }
   for (const section of sections) {
     const activePanel = panels.find((panel) => panel.sectionId === section.id && panel.active);
