@@ -1,3 +1,4 @@
+import { trySpendActionAP } from './pawn-action-system.js';
 import { connectedHullSet } from './hull-system.js';
 import { getBuildable } from './prefab-manager.js';
 const key = (x, y) => x + ',' + y;
@@ -15,18 +16,20 @@ export function completePlanAction(s, x, y) {
   if (s.pawn.op < 1) return { ok: false, message: 'NOT ENOUGH AP · 1 AP REQUIRED' };
   if (plan.type === 'demolishAluminiumWall') {
     if (!tile?.aluminiumWall) return { ok: false, message: 'NO ALUMINIUM WALL TO DEMOLISH' };
+    const payment = trySpendActionAP(s, 1);
+    if (!payment.ok) return payment;
     tile.aluminiumWall = false;
     tile.aluminiumWallIntegrity = null;
-    s.pawn.op--;
     delete s.map.plans[k];
     return { ok: true, message: 'ALUMINIUM WALL REMOVED · 1 AP SPENT' };
   }
   if (plan.type === 'demolishModule') {
     const obj = s.map.objects[plan.objectId];
     if (!obj || s.pawn.op < 1) return { ok: false, message: 'MODULE DECONSTRUCTION UNAVAILABLE' };
+    const payment = trySpendActionAP(s, 1);
+    if (!payment.ok) return payment;
     delete s.map.objects[obj.id];
     delete s.map.plans[k];
-    s.pawn.op--;
     return { ok: true, message: 'MODULE DISMANTLED · 1 AP SPENT' };
   }
   if (
@@ -52,6 +55,8 @@ export function completePlanAction(s, x, y) {
   const cost = ['hull', 'wall'].includes(plan.type);
   if (cost && !s.gameConfig.freeConstruction && s.resources.titanium < 1)
     return { ok: false, message: 'INSUFFICIENT TITANIUM' };
+  const payment = trySpendActionAP(s, 1);
+  if (!payment.ok) return payment;
   if (cost && !s.gameConfig.freeConstruction) s.resources.titanium--;
   if (plan.type === 'hull')
     s.map.tiles[k] = {
@@ -72,7 +77,6 @@ export function completePlanAction(s, x, y) {
     tile.wall = false;
     tile.wallIntegrity = null;
   } else if (plan.type === 'demolishHull') delete s.map.tiles[k];
-  s.pawn.op--;
   delete s.map.plans[k];
   return {
     ok: true,
@@ -93,8 +97,9 @@ export function completeModuleAction(s, id) {
       return { ok: false, message: 'INSUFFICIENT ' + missing[0].toUpperCase() };
     for (const [resource, amount] of Object.entries(cost)) s.resources[resource] -= amount;
   }
+  const payment = trySpendActionAP(s, 1);
+  if (!payment.ok) return payment;
   o.built = true;
-  s.pawn.op--;
   const costLabel = Object.entries(cost)
     .map(([resource, amount]) => amount + ' ' + resource.toUpperCase())
     .join(' + ');
