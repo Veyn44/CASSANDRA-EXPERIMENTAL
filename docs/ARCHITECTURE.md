@@ -66,22 +66,19 @@ src/
 
 ## Module runtime architecture
 
-Build definitions remain in `src/data/` and continue to describe catalogue identity, footprint, placement and authored data. Runtime behavior belongs in `src/modules/`; Build Catalog categories are presentation groups and must not determine source folders.
+Build definitions remain in `src/data/` and describe catalogue identity, footprint, placement and authored configuration. Runtime behavior belongs in `src/modules/`; Build Catalog categories are presentation groups and must not determine source folders.
 
-The runtime foundation is deliberately independent from the current simulation:
+The initial runtime foundation is deliberately independent from the current simulation:
 
 - `module-contract.js` defines the common implementation interface.
 - `module-registry.js` maps stable prefab IDs to runtime implementations and rejects duplicate registrations.
 - `modules/<module-name>/` contains module-specific implementations.
 - `structures/doors/` contains door-specific runtime behavior, separate from MOD modules even though both use the same registry contract.
 
-A runtime implementation is identified by its immutable prefab ID and may provide:
+The foundation currently exposes `createState(context)` and optional `onTurnStart`, `onTurnEnd`, `getActions` and `executeAction` hooks. The full capability model—including optional capacity/slots, physical interaction, remote access, automatic behavior, structured faults and technical service links—is specified in [Module Runtime Contract 2.0](MODULE-RUNTIME-CONTRACT-2.0.md).
 
-- `createState(context)`: create per-instance runtime state.
-- `onTurnStart(context)` and `onTurnEnd(context)`: deterministic turn hooks.
-- `getActions(context)`: expose available module actions.
-- `executeAction(context, actionId, payload)`: execute a module-specific action.
+Per-instance runtime state is keyed by the placed object's unique ID, not by prefab ID. The proposed common namespace is `gameState.objectRuntimeStates[object.id]`; its final integration point must be checked against the actual state and save/load architecture before implementation. This supports both MOD modules and STR structures without forcing every object to have capacity or occupants.
 
-The context is supplied by the future integration layer; implementations must not import UI code or mutate catalogue definitions. Per-instance runtime state will be stored by placed-object ID (not by prefab ID), so two copies of the same module can retain independent state.
+The shared Control Menu is planned as one UI shell for CP and CB with Sections, Modules and Status tabs. CP and CB retain their existing authority scopes; the menu is a presentation/command surface, not a replacement control system. Physical module menus use the same action definitions but only expose actions permitted at physical range.
 
-This stage only establishes the contract and registry. It does not register behavior for any existing prefab, add runtime state to the game state, or call module hooks from the turn lifecycle. Those integrations are introduced only when each module's behavior is designed. Existing construction, integrity, environment, power-route, section and CP/CB behavior remains owned by its current systems.
+The runtime contract is a design target, not a claim that those capabilities are implemented. No prefab runtimes are registered and module hooks are not connected to the turn lifecycle. Existing construction, integrity, environment, power-route, section and CP/CB behavior remains owned by its current systems.
