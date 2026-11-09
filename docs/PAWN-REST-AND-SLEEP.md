@@ -18,7 +18,7 @@ Rest states:
 | -1 to -15 | Deprived | 20% chance the action fails; its AP is spent |
 | -16 to -30 | Exhausted | 50% chance the pawn falls asleep immediately |
 
-If an Exhausted pawn does not fall asleep during an AP action, the action proceeds normally. Exhausted does not also receive the Deprived 20% failure roll. Independent malfunction chances remain a separate layer.
+If an Exhausted pawn does not fall asleep during an AP action, the action proceeds normally unless a separate malfunction occurs. Exhausted does not also receive the Deprived 20% failure roll. Forced-sleep chance and malfunction chance are added together and capped at 100%; the sleep portion causes floor sleep, while the remaining malfunction portion consumes the action AP without executing the action.
 
 When an Exhausted pawn falls asleep during an action:
 - The attempted action does not execute.
