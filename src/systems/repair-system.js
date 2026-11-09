@@ -1,3 +1,4 @@
+import { trySpendActionAP } from './pawn-action-system.js';
 const key = (x, y) => x + ',' + y;
 export function repairAt(s, x, y) {
   const scan = s.sectionsUi?.scan;
@@ -15,7 +16,9 @@ export function repairAt(s, x, y) {
     return { handled: true, ok: false, message: 'REPAIR TARGET NO LONGER EXISTS' };
   const before = target[field] ?? 100;
   if (before >= 100) return { handled: true, ok: false, message: 'STRUCTURE ALREADY AT 100% INTEGRITY' };
+  const payment = trySpendActionAP(s, 1);
+  if (!payment.ok) return { handled: true, ...payment };
   const after = Math.min(100, before + 10);
-  target[field] = after; entry.integrity = after; entry.repaired = true; s.pawn.op -= 1;
+  target[field] = after; entry.integrity = after; entry.repaired = true;
   return { handled: true, ok: true, apSpent: 1, before, after, message: entry.type + ' REPAIRED · ' + before + '% → ' + after + '% · 1 AP SPENT' };
 }
