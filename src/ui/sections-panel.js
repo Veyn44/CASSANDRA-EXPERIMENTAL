@@ -101,7 +101,7 @@ export function createSectionsPanel(root, s, onChange) {
           const sectionId = deckData.tileToSection[tileKey];
           const serviceFloor = technicalDeck?.tiles?.[tileKey]?.walkable === true;
           if (serviceFloor) {
-            const allowed = canAccessSection(control, deckLevel, sectionId);
+            const allowed = !control || canAccessSection(control, deckLevel, sectionId);
             const cell = '<span class="section-map-cell ' + (sectionId === selectedId ? 'selected' : sectionId ? 'section-cell' : 'unassigned') + '" title="' + esc(sectionId ?? 'POWER ROUTE') + '">' + (panels.some((panel) => panel.x === x && panel.y === y) ? '⌖' : '') + '</span>';
             grid.push(allowed ? '<button class="section-map-cell ' + (sectionId === selectedId ? 'selected' : sectionId ? 'section-cell' : 'unassigned') + '" data-section="' + esc(sectionId ?? '') + '" title="' + esc(sectionId ?? 'POWER ROUTE') + '">' + (panels.some((panel) => panel.x === x && panel.y === y) ? '⌖' : '') + '</button>' : '<div class="section-map-cell unassigned" title="RESTRICTED SECTION"></div>');
           }
@@ -138,7 +138,7 @@ export function createSectionsPanel(root, s, onChange) {
           );
           continue;
         }
-        const allowed = canAccessSection(control, deckLevel, id);
+        const allowed = !control || canAccessSection(control, deckLevel, id);
         const cls =
           id === selectedId ? 'selected' : id ? 'section-cell' : 'unassigned';
         grid.push(
