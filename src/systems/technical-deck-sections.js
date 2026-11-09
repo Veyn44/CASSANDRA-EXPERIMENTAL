@@ -87,18 +87,16 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
       };
       const ventOverride = state.technicalDeckEnvironmentOverrides?.[deckId]?.[section.id];
       if (ventOverride && ventOverride.turn === state.turn) {
-        section.airtightness = section.airtightness ?? 'STABLE';
+        section.airtightness = 'SEALED';
         section.environment = 'VACUUM';
         section.atmosphere = 'NONE';
         section.pressure = 'VACUUM';
         section.temperature = -270;
         section.vented = true;
       } else if (shaftClosed) {
+        // A closed shaft seals the boundary; it does not erase the pressure state
+        // maintained independently on either side.
         section.airtightness = 'SEALED';
-        section.environment = 'ISOLATED';
-        section.atmosphere = 'ISOLATED';
-        section.pressure = 'ISOLATED';
-        section.temperature = null;
       } else if (z0Section) {
         // An open shaft makes this section part of the same physical atmosphere as Z0.
         section.airtightness = z0Section.airtightness;
@@ -115,9 +113,16 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
     section.hasActivePanel = Boolean(activePanel);
     section.activePanelId = activePanel?.id ?? null;
     section.stability = activePanel ? 'STABLE' : 'UNSTABILIZED';
-    if (!section.sharedEnvironment)
-      section.environment = activePanel ? 'CONTROLLED' : 'UNMANAGED';
-    // Atmosphere, pressure and temperature are deliberately not simulated on technical decks yet.
+    if (!section.sharedEnvironment && !section.vented) {
+      section.atmosphere = activePanel ? 'OPTIMAL' : 'NONE';
+      section.pressure = activePanel ? 'OPTIMAL' : 'VACUUM';
+      section.temperature = activePanel ? 24 : -270;
+      section.environment = activePanel ? 'HABITABLE' : 'VACUUM';
+      section.airtightness ??= 'STABLE';
+      section.cautiousWallCount ??= 0;
+      section.criticalWallCount ??= 0;
+    }
+    // Technical-deck pressure is locally derived until its full integrity simulation is added.
   }
   return { sections, byId, tileToSection, panels };
 }
