@@ -97,6 +97,8 @@ export function createInitialState({ mode = 'normal' } = {}) {
       op: 12,
       selected: true,
       health: 100,
+      rest: 15,
+      pendingSleepHours: 0,
       moving: false,
     },
     camera: { x: 73, y: 64, zoom: 1 },
