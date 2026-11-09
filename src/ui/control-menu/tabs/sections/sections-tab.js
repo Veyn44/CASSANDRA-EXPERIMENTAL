@@ -199,7 +199,7 @@ export function createSectionsTab(root, s, onChange) {
     const temperature = info.temperature == null ? 'UNMAINTAINED' : info.temperature + ' °C';
     root.innerHTML =
       '<div class="sections-window"><header class="sections-header"><div><small>CASSANDRA · COMMAND SYSTEM</small><h2>SECTION CONTROL</h2></div><button data-close aria-label="Close">×</button></header><nav class="sections-deck-tabs" aria-label="Select ship deck">' +
-      FLOOR_LEVELS.map((level) => '<button data-deck="' + level + '" ' + (control?.scope === 'ONE_SECTION' && level !== control.deckId ? 'disabled title="LOCAL CONTROL · SECTION ONLY" ' : '') + 'class="' + (deckLevel === level ? 'active' : '') + '">' + level + '</button>').join('') +
+      FLOOR_LEVELS.map((level) => '<button data-deck="' + level + '" ' + (control && control.scope !== 'ALL_SECTIONS' && level !== control.deckId ? 'disabled title="LOCAL CONTROL · ADJACENT SECTIONS ONLY" ' : '') + 'class="' + (deckLevel === level ? 'active' : '') + '">' + level + '</button>').join('') +
       '</nav><div class="sections-layout"><aside class="sections-panel-list"><h3>CONTROL PANELS</h3>' +
       (panelRows || '<p class="sections-empty">NO CONTROL PANELS INSTALLED</p>') +
       '</aside><section class="sections-blueprint"><h3>' + (deckLevel === 'Z0' ? 'SHIP BLUEPRINT' : 'DECK BLUEPRINT') + '</h3><div class="section-map" style="grid-template-columns:repeat(' +
@@ -248,7 +248,7 @@ export function createSectionsTab(root, s, onChange) {
           })()
         : '') +
       '</aside></div><footer class="sections-footer"><span>' +
-      (control?.scope === 'ALL_SECTIONS' ? 'BRIDGE CONSOLE · GLOBAL ACCESS' : control?.scope === 'ONE_SECTION' ? 'LOCAL CONTROL · ' + control.sectionId : 'SECTION DIRECTORY · ' + panels.length + ' PANEL(S)') +
+      (control?.scope === 'ALL_SECTIONS' ? 'BRIDGE CONSOLE · GLOBAL ACCESS' : control?.scope === 'ONE_SECTION' ? 'LOCAL CONTROL · ' + control.sectionId : control?.scope === 'LOCAL_ADJACENT_SECTIONS' ? 'LOCAL CONTROL · ADJACENT SECTIONS' : 'SECTION DIRECTORY · ' + panels.length + ' PANEL(S)') +
       '</span><span>OPERATIONAL POINTS · ' +
       s.pawn.op +
       ' / ' +
