@@ -1,6 +1,5 @@
 import { getBuildable, getActiveDeckObjects } from '../systems/prefab-manager.js';
 import { applyDamageAt } from '../systems/damage-system.js';
-import { repairAt } from '../systems/repair-system.js';
 import { isBlocked } from '../systems/navigation.js';
 import { FLOOR_LEVELS } from '../ship-floors/floor-registry.js';
 import { bindCameraControls } from './camera-controls.js';
@@ -129,8 +128,11 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
       if (s.devMode && onShaft(p)) { showShaftMenu(e); return; }
       closeShaftMenu();
       if (s.activeDeck === 'Z0' && !s.activeTool) {
-        const repair = repairAt(s, p.x, p.y);
-        if (repair.handled) { note(repair.message); refresh(); return; }
+        const scan = s.sectionsUi?.scan;
+        if (scan?.turn === s.turn && scan.entries.some((entry) => entry.x === p.x && entry.y === p.y && entry.integrity < 100)) {
+          executeCommand.repair(p);
+          return;
+        }
       }
       if (s.activeDeck === 'Z0' && s.activeTool) {
         cancel();
