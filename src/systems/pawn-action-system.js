@@ -26,9 +26,17 @@ export function getRestState(pawn) {
 
 export function getPawnCondition(pawn) {
   const restState = getRestState(pawn);
-  const health = Number(pawn?.health ?? 100);
-  if (health <= 20 || restState.severity >= 2) return 'CRITICAL';
-  if (health < 70 || restState.severity === 1) return 'DEFICIT';
+  const health = Number(pawn?.health ?? 20);
+  const maxHealth = Number(pawn?.maxHealth ?? 20);
+  const healthPercent = Number.isFinite(maxHealth) && maxHealth > 0
+    ? (health / maxHealth) * 100
+    : 0;
+
+  const healthSeverity = healthPercent <= 20 ? 2 : healthPercent < 70 ? 1 : 0;
+  const worstSeverity = Math.max(healthSeverity, restState.severity);
+
+  if (worstSeverity >= 2) return 'CRITICAL';
+  if (worstSeverity === 1) return 'DEFICIT';
   return 'NORMAL';
 }
 
