@@ -6,7 +6,7 @@ import { bindCameraControls } from './camera-controls.js';
 import { createCommandExecutor } from './command-execution.js';
 import { createConstructionInput } from './construction-input.js';
 const key = (x, y) => x + ',' + y;
-export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelClick) {
+export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelClick, onPawnInfoClick) {
   const controller = new AbortController();
   const listen = (target, type, handler, options = {}) =>
     target.addEventListener(type, handler, { ...options, signal: controller.signal });
@@ -169,7 +169,17 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
       if ((s.pawn.deck ?? 'Z0') === s.activeDeck && p.x === s.pawn.x && p.y === s.pawn.y) {
         s.pawn.selected = true;
         s.selectedObject = null;
-        refresh();
+        const cameraAlreadyFocused =
+          Math.abs(s.camera.x - s.pawn.x) < 0.25 &&
+          Math.abs(s.camera.y - s.pawn.y) < 0.25;
+        if (cameraAlreadyFocused) {
+          onPawnInfoClick?.(s.pawn);
+        } else {
+          s.camera.x = s.pawn.x;
+          s.camera.y = s.pawn.y;
+          refresh();
+          note('CAMERA FOCUSED · ' + s.pawn.name.toUpperCase() + ' · CLICK AGAIN FOR PAWN INFO');
+        }
         return;
       }
       const obj = objectAt(p);
