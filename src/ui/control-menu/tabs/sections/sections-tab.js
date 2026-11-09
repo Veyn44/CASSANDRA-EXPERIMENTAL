@@ -27,6 +27,7 @@ export function createSectionsTab(root, s, onChange) {
   s.sectionsUi ??= { selectedPanelId: null, selectedSectionId: null };
   function selectSection(id) {
     if (control?.scope === 'ONE_SECTION' && id !== control.sectionId) return;
+    if (control?.scope === 'LOCAL_ADJACENT_SECTIONS' && !control.accessibleSectionIds.includes(id)) return;
     s.sectionsUi.selectedSectionId = id;
     s.sectionsUi.selectedPanelId =
       (s.activeDeck === 'Z0' ? detectSections(s) : detectTechnicalDeckSections(s, s.activeDeck)).panels.find((p) => p.sectionId === id)?.id ?? null;
@@ -38,6 +39,7 @@ export function createSectionsTab(root, s, onChange) {
     const data = activeLevel === 'Z0' ? detectSections(s) : detectTechnicalDeckSections(s, activeLevel),
       panel = data.panels.find((v) => v.id === id);
     if (control?.scope === 'ONE_SECTION' && panel?.sectionId !== control.sectionId) return;
+    if (control?.scope === 'LOCAL_ADJACENT_SECTIONS' && !control.accessibleSectionIds.includes(panel?.sectionId)) return;
     s.sectionsUi.selectedPanelId = id;
     s.sectionsUi.selectedSectionId = panel?.sectionId ?? null;
     report = null;
@@ -58,11 +60,13 @@ export function createSectionsTab(root, s, onChange) {
     if (control?.scope === 'ONE_SECTION') s.sectionsUi.selectedSectionId = control.sectionId;
     const panels = control?.scope === 'ONE_SECTION'
       ? deckData.panels.filter((panel) => panel.sectionId === control.sectionId)
-      : deckData.panels;
+      : control?.scope === 'LOCAL_ADJACENT_SECTIONS'
+        ? deckData.panels.filter((panel) => control.accessibleSectionIds.includes(panel.sectionId))
+        : deckData.panels;
     const info = deckLevel === 'Z0'
       ? selected ? getSectionInfo(selected) : getVacuumInfo()
       : {
-          type: 'TECHNICAL SECTION',
+          type: 'SECTION',
           id: selected?.id ?? deckLevel,
           name: selected?.name ?? 'TECHNICAL DECK ' + deckLevel,
           airtightness: selected?.airtightness ?? 'STRUCTURAL',
@@ -72,6 +76,8 @@ export function createSectionsTab(root, s, onChange) {
           temperature: selected?.temperature ?? null,
           environment: selected?.environment ?? ('POWER ROUTE · ' + (selected ? 'CONNECTED' : 'NO SECTION SELECTED')),
           activeTiles: selected?.tileCount ?? Object.values(technicalDeck?.tiles ?? {}).filter((tile) => tile.walkable).length,
+          cautiousWalls: selected?.cautiousWallCount ?? 0,
+          criticalWalls: selected?.criticalWallCount ?? 0,
         };
     const technicalFootprint = new Set(technicalDeck?.footprint ?? []);
     const allTiles = deckLevel === 'Z0'
@@ -234,10 +240,11 @@ export function createSectionsTab(root, s, onChange) {
         ? '<dt>CRITICAL BOUNDARIES</dt><dd>' + info.criticalWalls + '</dd>'
         : '') +
       '</dl></div>' +
-      (selected && (control?.scope === 'ALL_SECTIONS' || canAccessSection(control, deckLevel, selected.id)) && deckLevel === 'Z0'
+      (selected && canAccessSection(control, deckLevel, selected.id)
         ? (() => {
-            const action = getShipControlAction('COMPLETE_SCAN');
-            return '<div class="section-actions"><h3>AVAILABLE ACTIONS</h3><button data-action="' + action.id + '">' + action.label + ' <b>' + action.apCost + ' AP</b></button></div>';
+            const vent = getShipControlAction('VENT_SECTION');
+            const scan = deckLevel === 'Z0' ? getShipControlAction('COMPLETE_SCAN') : null;
+            return '<div class="section-actions"><h3>AVAILABLE ACTIONS</h3><button data-action="' + vent.id + '">' + vent.label + ' <b>' + vent.apCost + ' AP</b></button>' + (scan ? '<button data-action="' + scan.id + '">' + scan.label + ' <b>' + scan.apCost + ' AP</b></button>' : '') + '</div>';
           })()
         : '') +
       '</aside></div><footer class="sections-footer"><span>' +
@@ -327,9 +334,9 @@ export function createSectionsTab(root, s, onChange) {
     openFromDevice(device, deckId) {
       control = getControlDeviceContext(s, device, deckId);
       if (!control) return false;
-      if (control.scope === 'ONE_SECTION') {
+      if (control.scope === 'ONE_SECTION' || control.scope === 'LOCAL_ADJACENT_SECTIONS') {
         s.activeDeck = control.deckId;
-        s.sectionsUi.selectedSectionId = control.sectionId;
+        s.sectionsUi.selectedSectionId = control.scope === 'ONE_SECTION' ? control.sectionId : (control.accessibleSectionIds[0] ?? control.sectionId);
         s.sectionsUi.selectedPanelId = control.deviceId;
       } else {
         s.activeDeck = 'Z0';
