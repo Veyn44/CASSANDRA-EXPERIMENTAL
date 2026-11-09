@@ -95,10 +95,11 @@ export function completeModuleAction(s, id) {
     );
     if (missing)
       return { ok: false, message: 'INSUFFICIENT ' + missing[0].toUpperCase() };
-    for (const [resource, amount] of Object.entries(cost)) s.resources[resource] -= amount;
   }
   const payment = trySpendActionAP(s, 1);
   if (!payment.ok) return payment;
+  if (!s.gameConfig.freeConstruction)
+    for (const [resource, amount] of Object.entries(cost)) s.resources[resource] -= amount;
   o.built = true;
   const costLabel = Object.entries(cost)
     .map(([resource, amount]) => amount + ' ' + resource.toUpperCase())
