@@ -56,7 +56,7 @@ export function createCommandExecutor(s, refresh, note, objectAt, signal, onDevi
       && (targetObject.type === 'MOD0014' || targetObject.type === 'MOD0005' || (targetObject.type === 'MOD0006' && targetDeck === 'Z0'))) {
       const path = deviceInteractionPath(targetObject, targetDeck);
       if (!path) { note('NO ACCESSIBLE ROUTE TO CONTROL DEVICE'); return; }
-      note(s.pawn.name.toUpperCase() + ' MOVING TO ' (targetObject.type === 'MOD0005' ? 'BRIDGE CONSOLE' : targetObject.type === 'MOD0014' ? 'CONTROL PANEL' : 'SLEEPING MODULE'));
+      note(s.pawn.name.toUpperCase() + ' MOVING TO ' + (targetObject.type === 'MOD0005' ? 'BRIDGE CONSOLE' : targetObject.type === 'MOD0014' ? 'CONTROL PANEL' : 'SLEEPING MODULE'));
       walk(path, () => {
         note(targetObject.type === 'MOD0006' ? 'SLEEPING MODULE REACHED' : 'CONTROL DEVICE REACHED');
         onDeviceInteract?.(targetObject, targetDeck);
