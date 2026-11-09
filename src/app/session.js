@@ -4,6 +4,7 @@ import { createRenderer } from '../core/renderer.js';
 import { bindInput } from '../core/input.js';
 import { bindDevPanel } from '../ui/dev-panel.js';
 import { createCrewDeckPanels } from '../ui/crew-deck-panels.js';
+import { createPawnInfoPanel } from '../ui/pawn-info-panel.js';
 
 export function startGameSession(mode, { $, canvas, refresh, noteText }) {
   const dev = mode === 'dev';
@@ -12,6 +13,7 @@ export function startGameSession(mode, { $, canvas, refresh, noteText }) {
 
   const renderer = createRenderer(canvas, state);
   let sectionsPanel = null;
+  const pawnInfoPanel = createPawnInfoPanel($('#pawn-info-panel'), state);
 
   const disposeInput = bindInput(
     canvas,
@@ -29,7 +31,8 @@ export function startGameSession(mode, { $, canvas, refresh, noteText }) {
     noteText,
     (device, deckId) => device.type === 'MOD0006'
       ? sectionsPanel?.openFromModule(device)
-      : sectionsPanel?.openFromDevice(device, deckId)
+      : sectionsPanel?.openFromDevice(device, deckId),
+    () => pawnInfoPanel.open()
   );
 
   const devPanel = dev ? bindDevPanel(state, refresh, noteText) : null;
@@ -67,11 +70,12 @@ export function startGameSession(mode, { $, canvas, refresh, noteText }) {
     $('#generate-asteroid').onclick = null;
     $('#generate-next-asteroid').onclick = null;
     sectionsPanel?.close();
+    pawnInfoPanel?.close();
     crewDeckPanels?.dispose();
     $('#game-shell').classList.remove('dev-mode');
     $('#deck-panel').hidden = true;
     $('#crew-panel').hidden = true;
   }
 
-  return { dev, state, renderer, devPanel, sectionsPanel, crewDeckPanels, dispose };
+  return { dev, state, renderer, devPanel, sectionsPanel, crewDeckPanels, pawnInfoPanel, dispose };
 }
