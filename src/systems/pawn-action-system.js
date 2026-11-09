@@ -66,27 +66,31 @@ export function trySpendActionAP(state, apCost = 1, { pawn = state?.pawn, malfun
     return { ok: false, failed: false, reason: 'PAWN_SLEEPING', message: 'PAWN IS SLEEPING' };
   }
   const restState = getRestState(pawn);
-  if (!allowSleep && restState.forcedSleepChance && random() * 100 < restState.forcedSleepChance) {
+  const faultChance = Math.max(0, Math.min(100, Number(malfunctionChance) || 0));
+  const forcedSleepChance = allowSleep ? 0 : (restState.forcedSleepChance ?? 0);
+  const actionFailureChance = restState.failureChance;
+  const combinedChance = Math.min(100, forcedSleepChance + actionFailureChance + faultChance);
+  const roll = combinedChance > 0 ? random() * 100 : 100;
+  if (forcedSleepChance > 0 && roll < forcedSleepChance) {
     startPawnSleep(pawn, { forced: true });
     return {
-      ok: false, failed: true, forcedSleep: true,
+      ok: false, failed: true, forcedSleep: true, failureChance: combinedChance,
       reason: 'PAWN_FELL_ASLEEP',
       message: 'PAWN FELL ASLEEP FROM EXHAUSTION · REMAINING AP CONSUMED',
     };
   }
-  const failureChance = getActionFailureChance(pawn, malfunctionChance);
   pawn.op -= cost;
-  if (failureChance > 0 && random() * 100 < failureChance) {
+  if (roll < combinedChance) {
     return {
       ok: false,
       failed: true,
-      failureChance,
+      failureChance: combinedChance,
       apSpent: cost,
       reason: 'ACTION_FAILED',
-      message: 'ACTION FAILED · ' + failureChance + '% FAILURE CHANCE · ' + cost + ' AP SPENT',
+      message: 'ACTION FAILED · ' + combinedChance + '% FAILURE CHANCE · ' + cost + ' AP SPENT',
     };
   }
-  return { ok: true, failed: false, failureChance, apSpent: cost };
+  return { ok: true, failed: false, failureChance: combinedChance, apSpent: cost };
 }
 
 export function resolvePawnRestForTurn(pawn) {
