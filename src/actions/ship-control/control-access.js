@@ -23,8 +23,25 @@ export function getControlDeviceContext(state, device, deckId = state.activeDeck
   const adjacentSectionIds = new Set();
   for (const point of data.byId[sectionId].tiles) {
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      const neighborId = data.tileToSection[(point.x + dx) + ',' + (point.y + dy)];
-      if (neighborId && neighborId !== sectionId) adjacentSectionIds.add(neighborId);
+      const nx = point.x + dx, ny = point.y + dy;
+      const neighborId = data.tileToSection[nx + ',' + ny];
+      if (neighborId && neighborId !== sectionId) {
+        adjacentSectionIds.add(neighborId);
+        continue;
+      }
+      const boundaryKey = nx + ',' + ny;
+      const boundaryTile = deckId === 'Z0' ? state.map.tiles[boundaryKey] : state.technicalDecks?.[deckId]?.tiles?.[boundaryKey];
+      const boundaryDoor = deckId === 'Z0' && Object.values(state.map.objects).some((object) =>
+        ['STR0002', 'STR0003', 'STR0004', 'STR0005'].includes(object.type) && object.built !== false
+        && nx >= object.x && ny >= object.y && nx < object.x + object.w && ny < object.y + object.h
+      );
+      const isBoundary = deckId === 'Z0'
+        ? Boolean(boundaryTile?.wall || boundaryTile?.aluminiumWall || boundaryDoor)
+        : Boolean(boundaryTile && boundaryTile.walkable !== true);
+      if (isBoundary) {
+        const acrossId = data.tileToSection[(nx + dx) + ',' + (ny + dy)];
+        if (acrossId && acrossId !== sectionId) adjacentSectionIds.add(acrossId);
+      }
     }
   }
 
