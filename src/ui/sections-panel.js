@@ -136,7 +136,7 @@ export function createSectionsPanel(root, s, onChange) {
         const allowed = !control || canAccessSection(control, deckLevel, id);
         const cls = id === selectedId ? 'selected' : id ? 'section-cell' : 'unassigned';
         const scanned = scanByPosition.get(tileKey);
-        const integrityClass = scanned && scanned.integrity < 75 ? (scanned.integrity < 50 ? ' integrity-critical' : ' integrity-caution') : '';
+        const integrityClass = scanned ? (scanned.integrity < 50 ? ' integrity-critical' : scanned.integrity < 75 ? ' integrity-caution' : ' integrity-good') : '';
         grid.push(allowed ? '<button class="section-map-cell ' + cls + integrityClass + edgeClass + '" data-section="' + esc(id ?? '') + '" title="' + esc(id ?? 'UNASSIGNED') + (scanned ? ' · ' + scanned.integrity + '% INTEGRITY' : '') + '">' + (scanned ? scanned.integrity + '%' : panel ? '⌖' : '') + '</button>' : '<div class="section-map-cell unassigned" title="RESTRICTED SECTION"></div>');
       }
     const existingOrder = s.sectionsUi.panelOrder ?? [];
