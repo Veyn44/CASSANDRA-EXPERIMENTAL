@@ -9,15 +9,6 @@ export { DECK_ENVIRONMENT_TAGS, TECHNICAL_DECK_LEVELS };
 
 const key = (x, y) => x + ',' + y;
 
-export const TECHNICAL_DECK_LEVELS = ['Z+2', 'Z+1', 'Z-1', 'Z-2'];
-export const DECK_ENVIRONMENT_TAGS = Object.freeze({
-  'Z+2': 'DESTRUCTIBLE',
-  'Z+1': 'INDESTRUCTIBLE',
-  Z0: 'DESTRUCTIBLE',
-  'Z-1': 'INDESTRUCTIBLE',
-  'Z-2': 'DESTRUCTIBLE',
-});
-
 /** Build derived technical decks from the Z0 Hull footprint and object registry. */
 export function createTechnicalDecks(zeroLevelTiles, objects = {}) {
   const footprint = Object.entries(zeroLevelTiles)
