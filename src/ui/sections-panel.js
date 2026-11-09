@@ -129,7 +129,7 @@ export function createSectionsPanel(root, s, onChange) {
         const edgeClass = vacuumSelected && externalEdge ? ' external-boundary-selected' : '';
         if (tile.wall || tile.aluminiumWall) {
           const scanned = scanByPosition.get(tileKey);
-          const integrityClass = scanned && scanned.integrity < 75 ? (scanned.integrity < 50 ? ' integrity-critical' : ' integrity-caution') : '';
+          const integrityClass = scanned ? (scanned.integrity < 50 ? ' integrity-critical' : scanned.integrity < 75 ? ' integrity-caution' : ' integrity-good') : '';
           grid.push('<div class="section-map-cell boundary-cell ' + (tile.aluminiumWall ? 'aluminium-boundary' : 'hull-boundary') + integrityClass + edgeClass + '" title="' + (tile.aluminiumWall ? 'ALUMINIUM WALL' : 'HULL WALL') + (scanned ? ' · ' + scanned.integrity + '% INTEGRITY' : '') + '">' + (scanned ? scanned.integrity + '%' : '') + '</div>');
           continue;
         }

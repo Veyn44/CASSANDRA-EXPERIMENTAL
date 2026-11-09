@@ -1661,3 +1661,5 @@ body {
 /* Current-turn structural scan markings */
 .section-map-cell.integrity-caution { color: #ffd08a; background: rgba(160,99,31,.48); border: 2px solid #e5a044; font-weight: 800; text-shadow: 0 1px 2px #000; }
 .section-map-cell.integrity-critical { color: #ffb0b4; background: rgba(151,40,49,.5); border: 2px solid #e45b64; font-weight: 800; text-shadow: 0 1px 2px #000; }
+
+.section-map-cell.integrity-good { color: #9ce5b4; background: rgba(39,126,77,.42); border: 2px solid #48b978; font-weight: 800; text-shadow: 0 1px 2px #000; }
