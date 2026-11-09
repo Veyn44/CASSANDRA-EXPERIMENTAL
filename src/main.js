@@ -25,6 +25,7 @@ let dev = false,
   devPanel = null,
   sectionsPanel = null,
   crewDeckPanels = null,
+  pawnInfoPanel = null,
   disposeSession = null,
   activeCategory = 'core-systems';
 const { pause, resume, askLeave, returnToMenu } = createSessionLifecycle({
@@ -45,6 +46,7 @@ function refresh() {
   if (!state || !renderer) return;
   renderHud(state, renderer, sectionsPanel, gridBtn);
   crewDeckPanels?.refresh();
+  pawnInfoPanel?.refresh();
   renderBuildCatalog(
     state,
     activeCategory,
@@ -68,7 +70,7 @@ bindMenuControls({ $, startGame: (mode) => start(mode) });
 
 function start(mode = 'normal') {
   const session = startGameSession(mode, { $, canvas, refresh, noteText });
-  ({ dev, state, renderer, devPanel, sectionsPanel, crewDeckPanels, dispose: disposeSession } = session);
+  ({ dev, state, renderer, devPanel, sectionsPanel, crewDeckPanels, pawnInfoPanel, dispose: disposeSession } = session);
 }
 bindSectionsControls({
   $,
