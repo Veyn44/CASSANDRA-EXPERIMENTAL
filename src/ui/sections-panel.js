@@ -89,6 +89,8 @@ export function createSectionsPanel(root, s, onChange) {
       height = Math.max(1, maxY - minY + 1),
       grid = [];
     const vacuumSelected = control?.scope !== 'ONE_SECTION' && s.sectionsUi.selectedSectionId == null;
+    const scan = s.sectionsUi.scan?.turn === s.turn && s.sectionsUi.scan.sectionId === selectedId ? s.sectionsUi.scan : null;
+    const scanByPosition = new Map((scan?.entries ?? []).map((entry) => [entry.x + ',' + entry.y, entry]));
     for (let y = minY; y <= maxY; y++)
       for (let x = minX; x <= maxX; x++) {
         const tileKey = x + ',' + y;
@@ -171,8 +173,6 @@ export function createSectionsPanel(root, s, onChange) {
           '" title="Move down">↓</button></div></div>'
       )
       .join('');
-    const scan = s.sectionsUi.scan?.turn === s.turn && s.sectionsUi.scan.sectionId === selectedId ? s.sectionsUi.scan : null;
-    const scanByPosition = new Map((scan?.entries ?? []).map((entry) => [entry.x + ',' + entry.y, entry]));
     const weight = info.weight == null ? 'NOT DEFINED' : info.weight.toLocaleString('en-US');
     const temperature = info.temperature == null ? 'UNMAINTAINED' : info.temperature + ' °C';
     root.innerHTML =
