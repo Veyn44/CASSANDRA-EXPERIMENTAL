@@ -13,8 +13,8 @@ export function createControlMenu(root, state, onChange) {
       '</nav>' +
       '<div class="control-menu-content">' +
         '<section data-control-view="sections"></section>' +
-        '<section data-control-view="modules" hidden><div class="control-menu-placeholder"><h3>MODULE CONTROL</h3><p>MODULE ACTIONS WILL BE ADDED HERE.</p></div></section>' +
-        '<section data-control-view="status" hidden><div class="control-menu-placeholder"><h3>SYSTEM STATUS</h3><p>MODULE STATUS AND DIAGNOSTICS WILL BE ADDED HERE.</p></div></section>' +
+        '<section data-control-view="modules" hidden></section>' +
+        '<section data-control-view="status" hidden></section>' +
       '</div>' +
     '</div>';
   const views = [...root.querySelectorAll('[data-control-view]')];
