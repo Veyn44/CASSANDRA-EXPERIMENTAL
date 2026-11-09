@@ -1733,6 +1733,8 @@ body {
   color: var(--muted, #82919b);
   text-align: center;
 }
+.module-action-field { display: grid; gap: 8px; color: var(--text, #e5edf2); text-align: left; width: min(260px, 100%); }
+.module-action-field input { width: 100%; box-sizing: border-box; }
 .control-menu-placeholder h3 {
   color: var(--text, #e5edf2);
   letter-spacing: .1em;
