@@ -5,6 +5,8 @@ export function createPawnConditionState() {
     sleepHoursThisTurn: 0,
     sleepLocation: null,
     sleepingInModuleId: null,
+    sleepWakePosition: null,
+    sleepForced: false,
     pendingSleepHours: 0,
   };
 }
