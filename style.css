@@ -1663,3 +1663,7 @@ body {
 .section-map-cell.integrity-critical { color: #ffb0b4; background: rgba(151,40,49,.5); border: 2px solid #e45b64; font-weight: 800; text-shadow: 0 1px 2px #000; }
 
 .section-map-cell.integrity-good { color: #9ce5b4; background: rgba(39,126,77,.42); border: 2px solid #48b978; font-weight: 800; text-shadow: 0 1px 2px #000; }
+
+
+/* Shared Control Menu shell and tab layout */
+@import url('./src/ui/control-menu/control-menu.css');
