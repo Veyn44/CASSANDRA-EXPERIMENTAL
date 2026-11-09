@@ -117,7 +117,10 @@ export function endTurn(s) {
   }
   const pawns = [...new Set([...(s.pawns ?? []), s.pawn].filter(Boolean))];
   for (const pawn of pawns) {
+    const sleepingModuleId = pawn.sleepingInModuleId;
     resolvePawnRestForTurn(pawn);
+    if (sleepingModuleId && s.map.objects[sleepingModuleId])
+      s.map.objects[sleepingModuleId].occupiedBy = null;
     pawn.op = pawn.maxOP;
   }
   const report = diagnostics
