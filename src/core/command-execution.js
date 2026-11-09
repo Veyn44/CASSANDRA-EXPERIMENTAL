@@ -48,6 +48,7 @@ export function createCommandExecutor(s, refresh, note, objectAt, signal, onDevi
   }
   function command(p, targetDeck = s.activeDeck) {
     if (!inside(p) || s.pawn.moving) return;
+    if (s.pawn.sleepState === 'SLEEPING') { note('PAWN IS SLEEPING · MOVEMENT LOCKED'); return; }
     syncAccessShaftPressureLocks(s);
     if (!s.pawn.selected) { note('SELECT THE RESEARCHER FIRST'); return; }
     const targetObject = objectAt(p, targetDeck);
