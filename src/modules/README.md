@@ -38,4 +38,4 @@ The integration layer must define context shape and exact turn ordering before h
 
 See [Module Runtime Contract 2.0](../../docs/MODULE-RUNTIME-CONTRACT-2.0.md) for the approved target design, including the unified Control Menu, diagnostics/status concept, technical service points, preservation constraints and the separate Z-1 to Z0 navigation-menu bug.
 
-No prefab runtimes are registered in this foundation stage. Existing gameplay is not connected to this layer yet.
+MOD0006 Sleeping Module is the first registered runtime. It is reached through the physical Z0 command path and uses the shared pawn action/reliability system. Its sleep plan is stored on the pawn because rest is a pawn condition, not module occupancy. Other module runtimes and generalized per-instance runtime-state initialization remain future work.
