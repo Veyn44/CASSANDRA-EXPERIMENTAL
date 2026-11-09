@@ -4,7 +4,7 @@ export const sleepingModuleRuntime = defineModuleRuntime({
   id: 'MOD0006',
   createState: () => ({}),
   getActions: ({ pawn }) => {
-    if (!pawn || pawn.deck !== 'Z0') return [];
+    if (!pawn || (pawn.deck ?? 'Z0') !== 'Z0' || pawn.pendingSleepHours > 0) return [];
     const availableHours = Math.max(0, Math.min(11, pawn.op - 1));
     return availableHours > 0
       ? [{ id: 'START_SLEEP', label: 'SLEEP', apCost: 1, maxHours: availableHours, access: ['physical'] }]
