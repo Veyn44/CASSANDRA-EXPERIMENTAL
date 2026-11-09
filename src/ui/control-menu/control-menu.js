@@ -1,5 +1,4 @@
 import { createSectionsTab } from './tabs/sections/sections-tab.js';
-import './control-menu.css';
 
 export function createControlMenu(root, state, onChange) {
   root.innerHTML =
