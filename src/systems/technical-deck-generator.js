@@ -1,6 +1,7 @@
 import { getBuildable } from './prefab-manager.js';
 import {
   DECK_ENVIRONMENT_TAGS,
+  FLOOR_LEVELS,
   TECHNICAL_DECK_LEVELS,
 } from '../ship-floors/floor-registry.js';
 
@@ -106,7 +107,7 @@ export function syncTechnicalDecksState(state) {
     state.accessShaft.y = Math.min(...shaft.map(({ y }) => y));
   }
   state.accessShaft.decks ??= {};
-  for (const level of ['Z+2', 'Z+1', 'Z0', 'Z-1', 'Z-2'])
+  for (const level of FLOOR_LEVELS)
     state.accessShaft.decks[level] ??= { manualLock: false, autoLock: false, lockReason: null };
   return state.technicalDecks;
 }
