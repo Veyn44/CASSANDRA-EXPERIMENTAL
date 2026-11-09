@@ -65,12 +65,12 @@ export function createSectionsTab(root, s, onChange) {
           type: 'TECHNICAL SECTION',
           id: selected?.id ?? deckLevel,
           name: selected?.name ?? 'TECHNICAL DECK ' + deckLevel,
-          airtightness: 'STRUCTURAL',
-          weight: null,
-          atmosphere: 'NOT SIMULATED',
-          pressure: 'NOT SIMULATED',
-          temperature: null,
-          environment: 'POWER ROUTE · ' + (selected ? 'CONNECTED' : 'NO SECTION SELECTED'),
+          airtightness: selected?.airtightness ?? 'STRUCTURAL',
+          weight: selected?.tileCount ?? null,
+          atmosphere: selected?.atmosphere ?? 'NOT SIMULATED',
+          pressure: selected?.pressure ?? 'NOT SIMULATED',
+          temperature: selected?.temperature ?? null,
+          environment: selected?.environment ?? ('POWER ROUTE · ' + (selected ? 'CONNECTED' : 'NO SECTION SELECTED')),
           activeTiles: selected?.tileCount ?? Object.values(technicalDeck?.tiles ?? {}).filter((tile) => tile.walkable).length,
         };
     const technicalFootprint = new Set(technicalDeck?.footprint ?? []);
