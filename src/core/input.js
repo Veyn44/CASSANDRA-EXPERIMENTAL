@@ -1,6 +1,7 @@
 import { getBuildable, getActiveDeckObjects } from '../systems/prefab-manager.js';
 import { applyDamageAt } from '../systems/damage-system.js';
 import { isBlocked } from '../systems/navigation.js';
+import { FLOOR_LEVELS } from '../ship-floors/floor-registry.js';
 import { bindCameraControls } from './camera-controls.js';
 import { createCommandExecutor } from './command-execution.js';
 import { createConstructionInput } from './construction-input.js';
@@ -81,7 +82,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
     shaftMenu.innerHTML = s.pawn.selected
       ? '<button type="button" data-shaft-action="go">GO TO <span>›</span></button>' +
         '<div class="shaft-deck-options" hidden>' +
-        ['Z+2','Z+1','Z0','Z-1','Z-2'].filter((deck) => deck !== (s.pawn.deck ?? 'Z0'))
+        FLOOR_LEVELS.filter((deck) => deck !== (s.pawn.deck ?? 'Z0'))
           .map((deck) => '<button type="button" data-shaft-deck="' + deck + '">' + deck + '</button>').join('') +
         '</div>'
       : '<div class="shaft-lock-reason">SELECT THE RESEARCHER FIRST</div>';
