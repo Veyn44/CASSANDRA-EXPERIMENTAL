@@ -1,5 +1,6 @@
 const key = (x, y) => x + ',' + y;
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+const DIAGONALS = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
 
 /** Detect independent walkable sections on a derived technical deck. */
 export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
@@ -7,6 +8,21 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
   if (!deck) return { sections: [], byId: {}, tileToSection: {}, panels: [] };
   const tiles = deck.tiles ?? {};
   const walkable = (position) => tiles[position]?.walkable === true;
+  const shaft = deck.shaft?.[0] ?? null;
+  const insideShaftRadius = (x, y) =>
+    Boolean(shaft && Math.abs(x - shaft.x) <= 1 && Math.abs(y - shaft.y) <= 1);
+  const neighbors = (point) => {
+    const adjacent = [...DIRS];
+    // Diagonal connectivity is a local exception around the ladder only.
+    // This joins the four shaft approaches without merging rooms diagonally elsewhere.
+    if (insideShaftRadius(point.x, point.y)) {
+      for (const [dx, dy] of DIAGONALS) {
+        const nx = point.x + dx, ny = point.y + dy;
+        if (insideShaftRadius(nx, ny)) adjacent.push([dx, dy]);
+      }
+    }
+    return adjacent;
+  };
   const seen = new Set(), sections = [], byId = {}, tileToSection = {};
   for (const position of Object.keys(tiles).sort((a, b) => {
     const [ax, ay] = a.split(',').map(Number), [bx, by] = b.split(',').map(Number);
@@ -17,7 +33,7 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
     seen.add(position);
     for (let i = 0; i < queue.length; i++) {
       const point = queue[i]; cells.push(point);
-      for (const [dx, dy] of DIRS) {
+      for (const [dx, dy] of neighbors(point)) {
         const nx = point.x + dx, ny = point.y + dy, next = key(nx, ny);
         if (walkable(next) && !seen.has(next)) { seen.add(next); queue.push({ x: nx, y: ny }); }
       }
