@@ -537,7 +537,7 @@ export function completeSectionScan(s, section) {
   if (s.pawn.op < 2) return { ok: false, message: 'NOT ENOUGH AP · 2 AP REQUIRED' };
   const floors = section.tiles.map((p) => {
       const tile = s.map.tiles[key(p.x, p.y)];
-      return { type: 'HULL FLOOR', x: p.x, y: p.y, integrity: tile.integrity ?? 100 };
+      return { type: 'HULL FLOOR', targetKind: 'FLOOR', x: p.x, y: p.y, integrity: tile.integrity ?? 100 };
     }),
     walls = new Map();
   for (const p of section.tiles)
@@ -550,6 +550,7 @@ export function completeSectionScan(s, section) {
       if (!walls.has(k))
         walls.set(k, {
           type: tile.aluminiumWall ? 'ALUMINIUM WALL' : 'TITANIUM WALL',
+          targetKind: tile.aluminiumWall ? 'ALUMINIUM_WALL' : 'HULL_WALL',
           x,
           y,
           integrity: wallIntegrity(tile),
@@ -572,11 +573,15 @@ export function completeSectionScan(s, section) {
           object.type === 'STR0002' || object.type === 'STR0003'
             ? 'TITANIUM DOOR'
             : 'ALUMINIUM DOOR',
+        targetKind: 'DOOR',
+        targetId: object.id,
         x: object.x,
         y: object.y,
         integrity: doorIntegrity(object),
       });
   s.pawn.op -= 2;
+  s.sectionsUi ??= {};
+  s.sectionsUi.scan = { turn: s.turn, sectionId: section.id, entries: [...floors, ...walls.values()].map((entry) => ({ ...entry, repaired: false })) };
   return {
     ok: true,
     apSpent: 2,

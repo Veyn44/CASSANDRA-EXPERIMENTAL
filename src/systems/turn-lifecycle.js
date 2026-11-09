@@ -98,6 +98,7 @@ function environmentDiagnostics(state, environment, previousState, nextState) {
 
 export function endTurn(s) {
   s.turn++;
+  if (s.sectionsUi) s.sectionsUi.scan = null;
   if ((s.turn - 1) % 2 === 0) s.day++;
   syncTechnicalDecksState(s);
   const previousEnvironmentState = { ...(s.environmentState ?? {}) };

@@ -1,5 +1,6 @@
 import { getBuildable, getActiveDeckObjects } from '../systems/prefab-manager.js';
 import { applyDamageAt } from '../systems/damage-system.js';
+import { repairAt } from '../systems/repair-system.js';
 import { isBlocked } from '../systems/navigation.js';
 import { FLOOR_LEVELS } from '../ship-floors/floor-registry.js';
 import { bindCameraControls } from './camera-controls.js';
@@ -127,6 +128,10 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
       const p = tile(e.clientX, e.clientY);
       if (s.devMode && onShaft(p)) { showShaftMenu(e); return; }
       closeShaftMenu();
+      if (s.activeDeck === 'Z0' && !s.activeTool) {
+        const repair = repairAt(s, p.x, p.y);
+        if (repair.handled) { note(repair.message); refresh(); return; }
+      }
       if (s.activeDeck === 'Z0' && s.activeTool) {
         cancel();
         note('BUILD MODE CANCELLED');
@@ -205,7 +210,8 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
     }
     const inspector = document.querySelector('#tile-inspector');
     if (inspector) {
-      if (!s.hoverTile) inspector.textContent = 'HOVER OVER A TILE TO INSPECT';
+      if (!s.devMode) inspector.textContent = '';
+      else if (!s.hoverTile) inspector.textContent = 'HOVER OVER A TILE TO INSPECT';
       else if (s.activeDeck !== 'Z0') {
         const deck = s.technicalDecks?.[s.activeDeck];
         const tile = deck?.tiles[key(p.x, p.y)];

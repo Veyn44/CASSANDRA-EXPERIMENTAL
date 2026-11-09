@@ -128,31 +128,16 @@ export function createSectionsPanel(root, s, onChange) {
         const externalEdge = DIRS.some(([dx, dy]) => !s.map.tiles[x + dx + ',' + (y + dy)]?.hull);
         const edgeClass = vacuumSelected && externalEdge ? ' external-boundary-selected' : '';
         if (tile.wall || tile.aluminiumWall) {
-          grid.push(
-            '<div class="section-map-cell boundary-cell ' +
-              (tile.aluminiumWall ? 'aluminium-boundary' : 'hull-boundary') +
-              edgeClass +
-              '" title="' +
-              (tile.aluminiumWall ? 'ALUMINIUM WALL' : 'HULL WALL') +
-              '"></div>'
-          );
+          const scanned = scanByPosition.get(tileKey);
+          const integrityClass = scanned && scanned.integrity < 75 ? (scanned.integrity < 50 ? ' integrity-critical' : ' integrity-caution') : '';
+          grid.push('<div class="section-map-cell boundary-cell ' + (tile.aluminiumWall ? 'aluminium-boundary' : 'hull-boundary') + integrityClass + edgeClass + '" title="' + (tile.aluminiumWall ? 'ALUMINIUM WALL' : 'HULL WALL') + (scanned ? ' · ' + scanned.integrity + '% INTEGRITY' : '') + '">' + (scanned ? scanned.integrity + '%' : '') + '</div>');
           continue;
         }
         const allowed = !control || canAccessSection(control, deckLevel, id);
-        const cls =
-          id === selectedId ? 'selected' : id ? 'section-cell' : 'unassigned';
-        grid.push(
-          allowed ? '<button class="section-map-cell ' +
-            cls +
-            edgeClass +
-            '" data-section="' +
-            esc(id ?? '') +
-            '" title="' +
-            esc(id ?? 'UNASSIGNED') +
-            '">' +
-            (panel ? '⌖' : '') +
-            '</button>' : '<div class="section-map-cell unassigned" title="RESTRICTED SECTION"></div>'
-        );
+        const cls = id === selectedId ? 'selected' : id ? 'section-cell' : 'unassigned';
+        const scanned = scanByPosition.get(tileKey);
+        const integrityClass = scanned && scanned.integrity < 75 ? (scanned.integrity < 50 ? ' integrity-critical' : ' integrity-caution') : '';
+        grid.push(allowed ? '<button class="section-map-cell ' + cls + integrityClass + edgeClass + '" data-section="' + esc(id ?? '') + '" title="' + esc(id ?? 'UNASSIGNED') + (scanned ? ' · ' + scanned.integrity + '% INTEGRITY' : '') + '">' + (scanned ? scanned.integrity + '%' : panel ? '⌖' : '') + '</button>' : '<div class="section-map-cell unassigned" title="RESTRICTED SECTION"></div>');
       }
     const existingOrder = s.sectionsUi.panelOrder ?? [];
     const order = [
@@ -186,42 +171,8 @@ export function createSectionsPanel(root, s, onChange) {
           '" title="Move down">↓</button></div></div>'
       )
       .join('');
-    const reportHtml = report
-      ? '<div class="scan-report"><h3>COMPLETE SCAN REPORT</h3><p>FLOOR TILES · ' +
-        report.floors.length +
-        ' / BOUNDARIES · ' +
-        report.walls.length +
-        '</p><div class="scan-list">' +
-        report.floors
-          .map(
-            (v) =>
-              '<p><span>' +
-              v.type +
-              ' · ' +
-              v.x +
-              ', ' +
-              v.y +
-              '</span><b>' +
-              v.integrity +
-              '%</b></p>'
-          )
-          .join('') +
-        report.walls
-          .map(
-            (v) =>
-              '<p><span>' +
-              v.type +
-              ' · ' +
-              v.x +
-              ', ' +
-              v.y +
-              '</span><b>' +
-              v.integrity +
-              '%</b></p>'
-          )
-          .join('') +
-        '</div></div>'
-      : '';
+    const scan = s.sectionsUi.scan?.turn === s.turn && s.sectionsUi.scan.sectionId === selectedId ? s.sectionsUi.scan : null;
+    const scanByPosition = new Map((scan?.entries ?? []).map((entry) => [entry.x + ',' + entry.y, entry]));
     const weight = info.weight == null ? 'NOT DEFINED' : info.weight.toLocaleString('en-US');
     const temperature = info.temperature == null ? 'UNMAINTAINED' : info.temperature + ' °C';
     root.innerHTML =
@@ -273,7 +224,6 @@ export function createSectionsPanel(root, s, onChange) {
             return '<div class="section-actions"><h3>AVAILABLE ACTIONS</h3><button data-action="' + action.id + '">' + action.label + ' <b>' + action.apCost + ' AP</b></button></div>';
           })()
         : '') +
-      reportHtml +
       '</aside></div><footer class="sections-footer"><span>' +
       (control?.scope === 'ALL_SECTIONS' ? 'BRIDGE CONSOLE · GLOBAL ACCESS' : control?.scope === 'ONE_SECTION' ? 'LOCAL CONTROL · ' + control.sectionId : 'SECTION DIRECTORY · ' + panels.length + ' PANEL(S)') +
       '</span><span>OPERATIONAL POINTS · ' +

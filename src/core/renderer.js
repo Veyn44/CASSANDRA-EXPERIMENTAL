@@ -285,6 +285,17 @@ export function createRenderer(canvas, s) {
       c.stroke();
       c.restore();
     }
+    if (s.activeDeck === 'Z0' && s.sectionsUi?.scan?.turn === s.turn) {
+      for (const entry of s.sectionsUi.scan.entries) {
+        if (entry.integrity >= 75 && !(entry.repaired && entry.integrity > 74)) continue;
+        const p = pos(entry.x, entry.y);
+        const color = entry.repaired && entry.integrity > 74 ? '#48c878' : entry.integrity < 50 ? '#e45b64' : '#e5a044';
+        c.save(); c.strokeStyle = color; c.lineWidth = Math.max(2, z * 0.09);
+        c.strokeRect(p.x + z * 0.08, p.y + z * 0.08, z * 0.84, z * 0.84);
+        if (z >= 22) { c.fillStyle = color; c.font = 'bold ' + Math.max(8, Math.min(11, z * 0.25)) + 'px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(entry.integrity + '%', p.x + z / 2, p.y + z / 2); }
+        c.restore();
+      }
+    }
     if ((s.pawn.deck ?? 'Z0') === s.activeDeck) {
       const pawn = pos(s.pawn.x, s.pawn.y),
         m = z * 0.29;
