@@ -4,6 +4,8 @@ import {
   getVacuumInfo,
   completeSectionScan,
 } from '../systems/section-manager.js';
+import { executeShipControlAction } from '../actions/ship-control/action-executor.js';
+import { getShipControlAction } from '../actions/ship-control/action-registry.js';
 import { detectTechnicalDeckSections } from '../systems/technical-deck-sections.js';
 import { getActiveDeckObjects } from '../systems/prefab-manager.js';
 const esc = (v) =>
@@ -253,7 +255,10 @@ export function createSectionsPanel(root, s, onChange) {
         : '') +
       '</dl></div>' +
       (selected && deckLevel === 'Z0'
-        ? '<div class="section-actions"><h3>AVAILABLE ACTIONS</h3><button data-scan>COMPLETE SCAN <b>2 AP</b></button></div>'
+        ? (() => {
+            const action = getShipControlAction('COMPLETE_SCAN');
+            return '<div class="section-actions"><h3>AVAILABLE ACTIONS</h3><button data-action="' + action.id + '">' + action.label + ' <b>' + action.apCost + ' AP</b></button></div>';
+          })()
         : '') +
       reportHtml +
       '</aside></div><footer class="sections-footer"><span>LOCAL CONTROL · ' +
@@ -319,14 +324,19 @@ export function createSectionsPanel(root, s, onChange) {
           render();
         })
     );
-    const scan = root.querySelector('[data-scan]');
-    if (scan)
-      scan.onclick = () => {
-        const result = completeSectionScan(s, selected);
-        if (result.ok) report = result;
+    const actionButtons = root.querySelectorAll('[data-action]');
+    actionButtons.forEach((button) => {
+      button.onclick = () => {
+        const result = executeShipControlAction(s, button.dataset.action, {
+          section: selected,
+          panelId: s.sectionsUi.selectedPanelId,
+          deckId: deckLevel,
+        });
+        if (result.ok && result.actionId === 'COMPLETE_SCAN') report = result;
         onChange(result.message);
         render();
       };
+    });
   }
   return {
     open() {
