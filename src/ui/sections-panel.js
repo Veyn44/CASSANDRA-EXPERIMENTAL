@@ -67,12 +67,10 @@ export function createSectionsPanel(root, s, onChange) {
           name: selected?.name ?? 'TECHNICAL DECK ' + deckLevel,
           airtightness: 'STRUCTURAL',
           weight: null,
-          atmosphere: selected?.atmosphere ?? 'NO SECTION SELECTED',
-          pressure: selected?.pressure ?? 'NO SECTION SELECTED',
-          temperature: selected?.temperature ?? null,
-          environment: selected?.environment ?? 'NO SECTION SELECTED',
-          stability: selected?.stability ?? 'UNKNOWN',
-          hasActivePanel: selected?.hasActivePanel ?? false,
+          atmosphere: 'NOT SIMULATED',
+          pressure: 'NOT SIMULATED',
+          temperature: null,
+          environment: 'POWER ROUTE · ' + (selected ? 'CONNECTED' : 'NO SECTION SELECTED'),
           activeTiles: selected?.tileCount ?? Object.values(technicalDeck?.tiles ?? {}).filter((tile) => tile.walkable).length,
         };
     const technicalFootprint = new Set(technicalDeck?.footprint ?? []);
@@ -262,7 +260,6 @@ export function createSectionsPanel(root, s, onChange) {
       '</dd>' +
       (info.activeTiles != null ? '<dt>ACTIVE TILES</dt><dd>' + info.activeTiles + '</dd>' : '') +
       (info.airtightness ? '<dt>AIRTIGHTNESS</dt><dd>' + esc(info.airtightness) + '</dd>' : '') +
-      (deckLevel !== 'Z0' && selected ? '<dt>STABILITY</dt><dd>' + esc(info.stability) + '</dd><dt>CONTROL PANEL</dt><dd>' + (info.hasActivePanel ? 'ACTIVE' : 'INACTIVE') + '</dd>' : '') +
       (info.cautiousWalls
         ? '<dt>CAUTIOUS BOUNDARIES</dt><dd>' + info.cautiousWalls + '</dd>'
         : '') +
