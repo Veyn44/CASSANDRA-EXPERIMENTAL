@@ -1,4 +1,6 @@
 import { createSectionsTab } from './tabs/sections/sections-tab.js';
+import { createModulesTab } from './tabs/modules/modules-tab.js';
+import { createStatusTab } from './tabs/status/status-tab.js';
 
 export function createControlMenu(root, state, onChange) {
   root.innerHTML =
@@ -18,6 +20,8 @@ export function createControlMenu(root, state, onChange) {
   const views = [...root.querySelectorAll('[data-control-view]')];
   const tabs = [...root.querySelectorAll('[data-control-tab]')];
   const sections = createSectionsTab(root.querySelector('[data-control-view="sections"]'), state, onChange);
+  const modules = createModulesTab(root.querySelector('[data-control-view="modules"]'));
+  const status = createStatusTab(root.querySelector('[data-control-view="status"]'));
   let open = false;
   let activeTab = 'sections';
 
@@ -27,6 +31,8 @@ export function createControlMenu(root, state, onChange) {
     tabs.forEach((button) => button.classList.toggle('active', button.dataset.controlTab === tab));
     views.forEach((view) => { view.hidden = view.dataset.controlView !== tab; });
     if (tab === 'sections') sections.refresh();
+    if (tab === 'modules') modules.refresh();
+    if (tab === 'status') status.refresh();
   }
   function render() {
     root.hidden = !open;
