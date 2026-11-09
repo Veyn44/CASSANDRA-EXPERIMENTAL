@@ -2,20 +2,18 @@ import { defineModuleRuntime } from '../../module-contract.js';
 
 export const sleepingModuleRuntime = defineModuleRuntime({
   id: 'MOD0006',
-  createState: () => ({}),
-  getActions: ({ pawn }) => {
-    if (!pawn || (pawn.deck ?? 'Z0') !== 'Z0' || pawn.pendingSleepHours > 0) return [];
-    const availableHours = Math.max(0, Math.min(11, pawn.op - 1));
-    return availableHours > 0
-      ? [{ id: 'START_SLEEP', label: 'SLEEP', apCost: 1, maxHours: availableHours, access: ['physical'] }]
+  createState: () => ({ occupiedBy: null }),
+  getActions: ({ pawn, object }) => {
+    if (!pawn || (pawn.deck ?? 'Z0') !== 'Z0' || pawn.sleepState === 'SLEEPING') return [];
+    if (object?.occupiedBy) return [];
+    return pawn.op > 0
+      ? [{ id: 'SLEEP', label: 'SLEEP', access: ['physical'] }]
       : [];
   },
-  executeAction: ({ pawn }, actionId, payload = {}) => {
-    if (actionId !== 'START_SLEEP' || !pawn) return { ok: false, message: 'UNKNOWN SLEEP ACTION' };
-    const hours = Math.floor(Number(payload.hours) || 0);
-    const maxHours = Math.max(0, Math.min(11, pawn.op - 1));
-    if (hours < 1 || hours > maxHours)
-      return { ok: false, message: 'INVALID SLEEP DURATION' };
-    return { ok: true, hours };
+  executeAction: ({ pawn, object }, actionId) => {
+    if (actionId !== 'SLEEP' || !pawn || !object) return { ok: false, message: 'SLEEP ACTION UNAVAILABLE' };
+    if (object.occupiedBy) return { ok: false, message: 'SLEEPING MODULE IS OCCUPIED' };
+    if (pawn.sleepState === 'SLEEPING' || pawn.op <= 0) return { ok: false, message: 'PAWN CANNOT START SLEEP' };
+    return { ok: true };
   },
 });
