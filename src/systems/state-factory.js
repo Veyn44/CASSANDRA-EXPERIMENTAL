@@ -1,3 +1,4 @@
+import { createPawnConditionState } from './pawn-action-system.js';
 import { createGameConfig } from '../core/game-config.js';
 import { advanceEnvironment } from './section-manager.js';
 import { createTechnicalDecks } from './technical-deck-generator.js';
@@ -97,8 +98,7 @@ export function createInitialState({ mode = 'normal' } = {}) {
       op: 12,
       selected: true,
       health: 100,
-      rest: 15,
-      pendingSleepHours: 0,
+      ...createPawnConditionState(),
       moving: false,
     },
     camera: { x: 73, y: 64, zoom: 1 },
