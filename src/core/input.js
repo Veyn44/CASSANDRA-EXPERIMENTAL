@@ -311,7 +311,13 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
   }
   listen(canvas, 'pointerup', stop);
   listen(canvas, 'pointercancel', stop);
-  listen(canvas, 'contextmenu', (e) => e.preventDefault());
+  const gameViewport = canvas.closest('.viewport-wrap') ?? canvas.parentElement;
+  if (gameViewport) {
+    listen(gameViewport, 'contextmenu', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    }, { capture: true });
+  }
   listen(
     canvas,
     'wheel',
