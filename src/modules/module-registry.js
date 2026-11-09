@@ -1,4 +1,5 @@
-const moduleRuntimes = new Map();
+import { sleepingModuleRuntime } from './modules/sleeping-module/sleeping-module.js';
+const moduleRuntimes = new Map([[sleepingModuleRuntime.id, sleepingModuleRuntime]]);
 
 export function registerModuleRuntime(runtime) {
   if (!runtime || typeof runtime.id !== 'string' || typeof runtime.createState !== 'function')
