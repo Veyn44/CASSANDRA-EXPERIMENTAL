@@ -1,3 +1,5 @@
+import { FLOOR_LEVELS } from '../ship-floors/floor-registry.js';
+
 const key = (x, y) => x + ',' + y;
 const dirs = [
   [1, 0],
@@ -96,7 +98,6 @@ export function findWorkPath(s, x, y, w = 1, h = 1) {
 }
 
 
-const DECK_LEVELS = ['Z+2', 'Z+1', 'Z0', 'Z-1', 'Z-2'];
 export function isDeckLocked(s, deckId) {
   const access = s.accessShaft?.decks?.[deckId];
   return access
@@ -126,7 +127,7 @@ function reconstructDeckPath(came, endKey) {
 export function findDeckPath(s, target, targetDeck = s.activeDeck) {
   if (!s.devMode) return null;
   const startDeck = s.pawn.deck ?? 'Z0';
-  if (!DECK_LEVELS.includes(targetDeck) || (targetDeck !== 'Z0' && !s.technicalDecks?.[targetDeck])) return null;
+  if (!FLOOR_LEVELS.includes(targetDeck) || (targetDeck !== 'Z0' && !s.technicalDecks?.[targetDeck])) return null;
   const encode = (p) => p.deck + '|' + p.x + '|' + p.y;
   const start = { deck: startDeck, x: s.pawn.x, y: s.pawn.y };
   const startKey = encode(start);
@@ -138,8 +139,8 @@ export function findDeckPath(s, target, targetDeck = s.activeDeck) {
     if (p.deck === targetDeck && p.x === target.x && p.y === target.y) return reconstructDeckPath(came, pk);
     const next = dirs.map(([dx, dy]) => ({ deck: p.deck, x: p.x + dx, y: p.y + dy }));
     if (shaft.has(key(p.x, p.y))) {
-      const n = DECK_LEVELS.indexOf(p.deck);
-      for (const adjacent of [DECK_LEVELS[n - 1], DECK_LEVELS[n + 1]])
+      const n = FLOOR_LEVELS.indexOf(p.deck);
+      for (const adjacent of [FLOOR_LEVELS[n - 1], FLOOR_LEVELS[n + 1]])
         if (adjacent && !isDeckLocked(s, p.deck) && !isDeckLocked(s, adjacent))
           next.push({ deck: adjacent, x: p.x, y: p.y });
     }
