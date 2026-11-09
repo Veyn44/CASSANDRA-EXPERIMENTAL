@@ -311,9 +311,9 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
   }
   listen(canvas, 'pointerup', stop);
   listen(canvas, 'pointercancel', stop);
-  const gameViewport = canvas.closest('.viewport-wrap') ?? canvas.parentElement;
-  if (gameViewport) {
-    listen(gameViewport, 'contextmenu', (event) => {
+  const gameShell = canvas.closest('#game-shell') ?? canvas.parentElement;
+  if (gameShell) {
+    listen(gameShell, 'contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
     }, { capture: true });
