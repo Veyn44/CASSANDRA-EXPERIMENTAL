@@ -44,6 +44,11 @@ export function startPawnSleep(pawn, { moduleId = null, location = null, forced 
   pawn.sleepState = 'SLEEPING';
   pawn.sleepHoursThisTurn = hours;
   pawn.sleepLocation = location ?? { x: pawn.x, y: pawn.y, deck: pawn.deck ?? 'Z0' };
+  if (moduleId && location) {
+    pawn.x = location.x;
+    pawn.y = location.y;
+    pawn.deck = location.deck ?? 'Z0';
+  }
   pawn.sleepingInModuleId = moduleId;
   pawn.pendingSleepHours = hours;
   pawn.op = 0;
