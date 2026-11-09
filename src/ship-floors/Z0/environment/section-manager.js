@@ -1,3 +1,4 @@
+import { trySpendActionAP } from '../../../systems/pawn-action-system.js';
 import { applyIntegrityChange, createIntegrityContext } from '../../../systems/integrity-system.js';
 const key = (x, y) => x + ',' + y;
 const DIRS = [
@@ -534,7 +535,6 @@ export function getSectionInfo(section) {
 }
 export function completeSectionScan(s, section) {
   if (!section) return { ok: false, message: 'NO SECTION SELECTED' };
-  if (s.pawn.op < 2) return { ok: false, message: 'NOT ENOUGH AP · 2 AP REQUIRED' };
   const floors = section.tiles.map((p) => {
       const tile = s.map.tiles[key(p.x, p.y)];
       return { type: 'HULL FLOOR', targetKind: 'FLOOR', x: p.x, y: p.y, integrity: tile.integrity ?? 100 };
@@ -609,7 +609,8 @@ export function completeSectionScan(s, section) {
         y: object.y,
         integrity: doorIntegrity(object),
       });
-  s.pawn.op -= 2;
+  const payment = trySpendActionAP(s, 2);
+  if (!payment.ok) return payment;
   s.sectionsUi ??= {};
   s.sectionsUi.scan = { turn: s.turn, sectionId: section.id, entries: [...floors, ...walls.values()].map((entry) => ({ ...entry, repaired: false })) };
   return {
