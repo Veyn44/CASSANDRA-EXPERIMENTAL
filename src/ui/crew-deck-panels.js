@@ -51,7 +51,7 @@ function renderMiniMap(state, deckId, color) {
     '</div>';
 }
 
-export function createCrewDeckPanels(state, refresh, note) {
+export function createCrewDeckPanels(state, refresh, note, onPawnInfoClick) {
   const deckRoot = document.querySelector('#deck-list');
   const crewRoot = document.querySelector('#crew-list');
 
@@ -121,13 +121,21 @@ export function createCrewDeckPanels(state, refresh, note) {
         if (!pawn) return;
         for (const entry of pawns) entry.selected = entry.id === pawn.id;
         state.activeDeck = pawn.deck ?? 'Z0';
-        state.camera.x = pawn.x;
-        state.camera.y = pawn.y;
+        const visiblePosition = pawn.sleepState === 'SLEEPING' && pawn.sleepLocation ? pawn.sleepLocation : pawn;
+        const cameraAlreadyFocused =
+          Math.abs(state.camera.x - visiblePosition.x) < 0.25 &&
+          Math.abs(state.camera.y - visiblePosition.y) < 0.25;
         state.selectedObject = null;
         state.selection = pawn.id;
         state.activeTool = null;
-        refresh();
-        note('CREW SELECTED · ' + pawn.name.toUpperCase() + ' · ' + state.activeDeck);
+        if (cameraAlreadyFocused) {
+          onPawnInfoClick?.(pawn);
+        } else {
+          state.camera.x = visiblePosition.x;
+          state.camera.y = visiblePosition.y;
+          refresh();
+          note('CREW SELECTED · ' + pawn.name.toUpperCase() + ' · CLICK AGAIN FOR PAWN INFO');
+        }
       });
     });
   }
