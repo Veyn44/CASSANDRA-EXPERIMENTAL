@@ -1,4 +1,11 @@
 import { getBuildable } from './prefab-manager.js';
+import {
+  DECK_ENVIRONMENT_TAGS,
+  TECHNICAL_DECK_LEVELS,
+} from '../ship-floors/floor-registry.js';
+
+// Compatibility re-exports; the floor registry is the canonical source.
+export { DECK_ENVIRONMENT_TAGS, TECHNICAL_DECK_LEVELS };
 
 const key = (x, y) => x + ',' + y;
 
