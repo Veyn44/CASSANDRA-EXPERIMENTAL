@@ -29,7 +29,7 @@ export function createCommandExecutor(s, refresh, note, objectAt, signal, onDevi
     setTimeout(step, 115);
   }
   function deviceInteractionPath(object, targetDeck) {
-    if (targetDeck === 'Z0') {
+    if (targetDeck === 'Z0' && (s.pawn.deck ?? 'Z0') === 'Z0') {
       const path = findWorkPath(s, object.x, object.y, object.w, object.h);
       return path?.map((point) => ({ ...point, deck: targetDeck })) ?? null;
     }
