@@ -63,3 +63,25 @@ src/
 6. Separate world/deck/section responsibilities and add the five-deck data model.
 7. Add power, life support, inventory and shuttle systems as independent domains.
 8. Add multi-deck UI selection and rendering only after the underlying deck model is stable.
+
+## Module runtime architecture
+
+Build definitions remain in `src/data/` and continue to describe catalogue identity, footprint, placement and authored data. Runtime behavior belongs in `src/modules/`; Build Catalog categories are presentation groups and must not determine source folders.
+
+The runtime foundation is deliberately independent from the current simulation:
+
+- `module-contract.js` defines the common implementation interface.
+- `module-registry.js` maps stable prefab IDs to runtime implementations and rejects duplicate registrations.
+- `modules/<module-name>/` contains module-specific implementations.
+- `structures/doors/` contains door-specific runtime behavior, separate from MOD modules even though both use the same registry contract.
+
+A runtime implementation is identified by its immutable prefab ID and may provide:
+
+- `createState(context)`: create per-instance runtime state.
+- `onTurnStart(context)` and `onTurnEnd(context)`: deterministic turn hooks.
+- `getActions(context)`: expose available module actions.
+- `executeAction(context, actionId, payload)`: execute a module-specific action.
+
+The context is supplied by the future integration layer; implementations must not import UI code or mutate catalogue definitions. Per-instance runtime state will be stored by placed-object ID (not by prefab ID), so two copies of the same module can retain independent state.
+
+This stage only establishes the contract and registry. It does not register behavior for any existing prefab, add runtime state to the game state, or call module hooks from the turn lifecycle. Those integrations are introduced only when each module's behavior is designed. Existing construction, integrity, environment, power-route, section and CP/CB behavior remains owned by its current systems.
