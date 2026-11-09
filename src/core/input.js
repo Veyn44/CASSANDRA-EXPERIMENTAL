@@ -291,7 +291,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
           attrs += ' · Work cost 1 AP';
         }
         if (p.x === s.pawn.x && p.y === s.pawn.y) {
-          label = 'RESEARCHER · PAWN';
+          label = (s.pawn.name ?? 'PAWN').toUpperCase() + ' · PAWN';
           attrs =
             'HP ' +
             s.pawn.health +
