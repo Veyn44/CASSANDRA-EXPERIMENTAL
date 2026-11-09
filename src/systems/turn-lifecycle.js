@@ -1,5 +1,6 @@
 import { advanceEnvironment } from './section-manager.js';
 import { syncTechnicalDecksState } from './technical-deck-generator.js';
+import { resolvePawnRestForTurn } from './pawn-action-system.js';
 
 function sectionSignature(section) {
   return section.tiles
@@ -114,6 +115,7 @@ export function endTurn(s) {
     console.table(diagnostics);
     console.groupEnd?.();
   }
+  resolvePawnRestForTurn(s.pawn);
   s.pawn.op = s.pawn.maxOP;
   const report = diagnostics
     .filter((item) => item.damagedBoundaryWalls > 0 || item.cautiousWalls > 0 || item.criticalWalls > 0 || item.openBoundaries > 0)
