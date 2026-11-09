@@ -1,3 +1,7 @@
+export function createPawnConditionState() {
+  return { rest: 15, pendingSleepHours: 0 };
+}
+
 export const REST_STATE = Object.freeze({
   WELL_RESTED: { min: 0, max: 15, failureChance: 0, label: 'WELL RESTED' },
   DEPRIVED: { min: -15, max: -1, failureChance: 20, label: 'DEPRIVED' },
