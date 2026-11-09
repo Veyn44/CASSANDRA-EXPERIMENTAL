@@ -1,3 +1,4 @@
+import { getPawnCondition, getRestState } from '../systems/pawn-action-system.js';
 import { FLOOR_LEVELS } from '../ship-floors/floor-registry.js';
 
 const DECKS = FLOOR_LEVELS.map((id) => ({ id, label: id.replace('Z', 'Z ') }));
@@ -81,8 +82,10 @@ export function createCrewDeckPanels(state, refresh, note) {
     crewRoot.innerHTML = pawns.map((pawn) => {
       const color = pawn.color ?? PAWN_COLOR;
       const initials = String(pawn.name ?? 'P').trim().slice(0, 1).toUpperCase();
+      const condition = getPawnCondition(pawn);
+      const restState = getRestState(pawn);
       return '<button class="crew-card ' +
-        (pawn.selected ? 'active' : '') +
+        (pawn.selected ? 'active' : '') + ' condition-' + condition.toLowerCase() + (pawn.sleepState === 'SLEEPING' ? ' sleeping' : '') +
         '" data-pawn="' + pawn.id + '" type="button">' +
         '<span class="crew-portrait" aria-hidden="true"><b>' + initials + '</b></span>' +
         '<span class="crew-details"><strong>' +
@@ -95,7 +98,7 @@ export function createCrewDeckPanels(state, refresh, note) {
         pawn.op +
         ' / ' +
         pawn.maxOP +
-        '</b></i></span></span><i class="crew-color" style="--pawn-color:' +
+        '</b></i><i>REST <b>' + pawn.rest + '</b></i><i>' + (pawn.sleepState === 'SLEEPING' ? 'SLEEPING' : restState.label) + '</i></span></span><i class="crew-color" style="--pawn-color:' +
         color +
         '"></i></button>';
     }).join('');
