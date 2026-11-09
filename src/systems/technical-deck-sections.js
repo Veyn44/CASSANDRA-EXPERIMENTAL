@@ -108,7 +108,8 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
     section.hasActivePanel = Boolean(activePanel);
     section.activePanelId = activePanel?.id ?? null;
     section.stability = activePanel ? 'STABLE' : 'UNSTABILIZED';
-    section.environment = activePanel ? 'CONTROLLED' : 'UNMANAGED';
+    if (!section.sharedEnvironment)
+      section.environment = activePanel ? 'CONTROLLED' : 'UNMANAGED';
     // Atmosphere, pressure and temperature are deliberately not simulated on technical decks yet.
   }
   return { sections, byId, tileToSection, panels };
