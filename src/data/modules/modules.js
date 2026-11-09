@@ -62,8 +62,8 @@ export const MODULES = [
     type: 'module',
     w: 2,
     h: 1,
-    description: 'Ordinary sleeping accommodation for the researcher.',
-    function: 'Crew rest',
+    description: 'Physical crew interaction point used to schedule sleep and restore pawn rest.',
+    function: 'Sleep scheduling · pawn rest recovery',
     placement: 'hull',
   },
   {
