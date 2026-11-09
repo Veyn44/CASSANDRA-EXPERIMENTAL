@@ -112,7 +112,13 @@ function isBlockedOnDeck(s, deckId, x, y) {
   if (!deck) return true;
   if (shaftCells(s).has(k)) return false;
   const tile = deck.tiles?.[k];
-  return !tile || tile.walkable === false;
+  if (!tile || tile.walkable === false) return true;
+  return Object.values(s.technicalDeckObjects?.[deckId] ?? {}).some(
+    (object) => object.built !== false &&
+      (object.type === 'MOD0014' || object.type === 'MOD0005') &&
+      x >= object.x && y >= object.y &&
+      x < object.x + object.w && y < object.y + object.h
+  );
 }
 function reconstructDeckPath(came, endKey) {
   const path = [];
