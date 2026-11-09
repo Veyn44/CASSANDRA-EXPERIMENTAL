@@ -176,6 +176,28 @@ export function detectSections(s, { useSnapshot = true } = {}) {
     sections.push(section);
     byId[id] = section;
   }
+  // Model the access shaft as a vertical neighbor to the technical deck.
+  // The shaft is an airtight boundary while either side's interlock is engaged.
+  const shaftClosed = Boolean(
+    s.accessShaft?.decks?.Z0?.manualLock || s.accessShaft?.decks?.Z0?.autoLock ||
+    s.accessShaft?.decks?.['Z-1']?.manualLock || s.accessShaft?.decks?.['Z-1']?.autoLock
+  );
+  for (const cell of s.accessShaft?.cells ?? []) {
+    const sectionId = tileToSection[key(cell.x, cell.y)];
+    const section = sectionId ? byId[sectionId] : null;
+    if (!section) continue;
+    const technicalTiles = s.technicalDecks?.['Z-1']?.tiles ?? {};
+    const adjacentCells = DIRS
+      .map(([dx, dy]) => ({ x: cell.x + dx, y: cell.y + dy }))
+      .filter((point) => technicalTiles[key(point.x, point.y)]?.walkable === true);
+    section.verticalNeighbors ??= [];
+    section.verticalNeighbors.push({
+      deckId: 'Z-1',
+      shaftOpen: !shaftClosed,
+      airtight: shaftClosed,
+      adjacentCells,
+    });
+  }
   const vacuumSet = vacuumArea(s);
   for (const section of sections) {
     const own = new Set(section.tiles.map((p) => key(p.x, p.y))),
