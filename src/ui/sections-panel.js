@@ -2,7 +2,6 @@ import {
   detectSections,
   getSectionInfo,
   getVacuumInfo,
-  completeSectionScan,
 } from '../systems/section-manager.js';
 import { executeShipControlAction } from '../actions/ship-control/action-executor.js';
 import { getShipControlAction } from '../actions/ship-control/action-registry.js';
