@@ -87,7 +87,7 @@ export function createInitialState({ mode = 'normal' } = {}) {
     },
     pawn: {
       id: 'researcher-01',
-      name: 'Researcher',
+      name: 'Veyn',
       color: '#d76b73',
       deck: 'Z0',
       facing: 0,
@@ -97,7 +97,8 @@ export function createInitialState({ mode = 'normal' } = {}) {
       maxOP: 12,
       op: 12,
       selected: true,
-      health: 100,
+      health: 20,
+      maxHealth: 20,
       ...createPawnConditionState(),
       moving: false,
     },
