@@ -7,13 +7,13 @@ import { executeShipControlAction } from '../actions/ship-control/action-executo
 import { getShipControlAction } from '../actions/ship-control/action-registry.js';
 import { detectTechnicalDeckSections } from '../systems/technical-deck-sections.js';
 import { getActiveDeckObjects } from '../systems/prefab-manager.js';
+import { FLOOR_LEVELS } from '../ship-floors/floor-registry.js';
 import { getControlDeviceContext, canAccessSection } from '../actions/ship-control/control-access.js';
 const esc = (v) =>
   String(v ?? '').replace(
     /[&<>"']/g,
     (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
   );
-const DECK_LEVELS = ['Z+2', 'Z+1', 'Z0', 'Z-1', 'Z-2'];
 const DIRS = [
   [1, 0],
   [-1, 0],
@@ -226,7 +226,7 @@ export function createSectionsPanel(root, s, onChange) {
     const temperature = info.temperature == null ? 'UNMAINTAINED' : info.temperature + ' °C';
     root.innerHTML =
       '<div class="sections-window"><header class="sections-header"><div><small>CASSANDRA · COMMAND SYSTEM</small><h2>SECTION CONTROL</h2></div><button data-close aria-label="Close">×</button></header><nav class="sections-deck-tabs" aria-label="Select ship deck">' +
-      DECK_LEVELS.map((level) => '<button data-deck="' + level + '" ' + (control?.scope === 'ONE_SECTION' && level !== control.deckId ? 'disabled title="LOCAL CONTROL · SECTION ONLY" ' : '') + 'class="' + (deckLevel === level ? 'active' : '') + '">' + level + '</button>').join('') +
+      FLOOR_LEVELS.map((level) => '<button data-deck="' + level + '" ' + (control?.scope === 'ONE_SECTION' && level !== control.deckId ? 'disabled title="LOCAL CONTROL · SECTION ONLY" ' : '') + 'class="' + (deckLevel === level ? 'active' : '') + '">' + level + '</button>').join('') +
       '</nav><div class="sections-layout"><aside class="sections-panel-list"><h3>CONTROL PANELS</h3>' +
       (panelRows || '<p class="sections-empty">NO CONTROL PANELS INSTALLED</p>') +
       '</aside><section class="sections-blueprint"><h3>' + (deckLevel === 'Z0' ? 'SHIP BLUEPRINT' : 'DECK BLUEPRINT') + '</h3><div class="section-map" style="grid-template-columns:repeat(' +
@@ -288,7 +288,7 @@ export function createSectionsPanel(root, s, onChange) {
     root.querySelectorAll('[data-deck]').forEach((button) => {
       button.onclick = () => {
         const level = button.dataset.deck;
-        if (!DECK_LEVELS.includes(level)) return;
+        if (!FLOOR_LEVELS.includes(level)) return;
         s.activeDeck = level;
         s.sectionsUi.selectedSectionId = null;
         s.sectionsUi.selectedPanelId = null;
