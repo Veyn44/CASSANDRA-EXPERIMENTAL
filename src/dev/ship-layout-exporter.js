@@ -1,5 +1,5 @@
 import { getBuildable } from '../systems/prefab-manager.js';
-import { TECHNICAL_DECK_LEVELS } from '../systems/technical-deck-generator.js';
+import { TECHNICAL_DECK_LEVELS } from '../ship-floors/floor-registry.js';
 
 const sortTiles = (tiles) => [...tiles].sort((a, b) => a.y - b.y || a.x - b.x || a.type.localeCompare(b.type));
 function serializeObjects(registry = {}) {
