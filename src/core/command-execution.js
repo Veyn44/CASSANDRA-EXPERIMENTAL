@@ -50,13 +50,13 @@ export function createCommandExecutor(s, refresh, note, objectAt, signal, onDevi
     if (!inside(p) || s.pawn.moving) return;
     if (s.pawn.sleepState === 'SLEEPING') { note('PAWN IS SLEEPING · MOVEMENT LOCKED'); return; }
     syncAccessShaftPressureLocks(s);
-    if (!s.pawn.selected) { note('SELECT THE RESEARCHER FIRST'); return; }
+    if (!s.pawn.selected) { note('SELECT ' + s.pawn.name.toUpperCase() + ' FIRST'); return; }
     const targetObject = objectAt(p, targetDeck);
     if (targetObject && targetObject.built !== false
       && (targetObject.type === 'MOD0014' || targetObject.type === 'MOD0005' || (targetObject.type === 'MOD0006' && targetDeck === 'Z0'))) {
       const path = deviceInteractionPath(targetObject, targetDeck);
       if (!path) { note('NO ACCESSIBLE ROUTE TO CONTROL DEVICE'); return; }
-      note('RESEARCHER MOVING TO ' + (targetObject.type === 'MOD0005' ? 'BRIDGE CONSOLE' : targetObject.type === 'MOD0014' ? 'CONTROL PANEL' : 'SLEEPING MODULE'));
+      note(s.pawn.name.toUpperCase() + ' MOVING TO ' (targetObject.type === 'MOD0005' ? 'BRIDGE CONSOLE' : targetObject.type === 'MOD0014' ? 'CONTROL PANEL' : 'SLEEPING MODULE'));
       walk(path, () => {
         note(targetObject.type === 'MOD0006' ? 'SLEEPING MODULE REACHED' : 'CONTROL DEVICE REACHED');
         onDeviceInteract?.(targetObject, targetDeck);
