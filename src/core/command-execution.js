@@ -5,7 +5,7 @@ import { getBuildable } from '../systems/prefab-manager.js';
 
 const key = (x, y) => x + ',' + y;
 
-export function createCommandExecutor(s, refresh, note, objectAt, signal) {
+export function createCommandExecutor(s, refresh, note, objectAt, signal, onDeviceInteract) {
   const inside = (p) => p.x >= 0 && p.y >= 0 && p.x < 256 && p.y < 128;
   function walk(path, done) {
     if (!path || !path.length) { note('NO ACCESSIBLE PATH'); return; }
@@ -28,10 +28,40 @@ export function createCommandExecutor(s, refresh, note, objectAt, signal) {
     };
     setTimeout(step, 115);
   }
+  function deviceInteractionPath(object, targetDeck) {
+    if (targetDeck === 'Z0') {
+      const path = findWorkPath(s, object.x, object.y, object.w, object.h);
+      return path?.map((point) => ({ ...point, deck: targetDeck })) ?? null;
+    }
+    let best = null;
+    for (let x = object.x - 1; x <= object.x + object.w; x++) {
+      for (let y = object.y - 1; y <= object.y + object.h; y++) {
+        const onPerimeter = x === object.x - 1 || x === object.x + object.w
+          || y === object.y - 1 || y === object.y + object.h;
+        if (!onPerimeter) continue;
+        const path = findDeckPath(s, { x, y }, targetDeck);
+        if (path && (!best || path.length < best.length)) best = path;
+      }
+    }
+    return best;
+  }
   function command(p, targetDeck = s.activeDeck) {
     if (!inside(p) || s.pawn.moving) return;
     syncAccessShaftPressureLocks(s);
     if (!s.pawn.selected) { note('SELECT THE RESEARCHER FIRST'); return; }
+    const targetObject = objectAt(p);
+    if (targetObject && targetObject.built !== false
+      && (targetObject.type === 'MOD0014' || targetObject.type === 'MOD0005')) {
+      const path = deviceInteractionPath(targetObject, targetDeck);
+      if (!path) { note('NO ACCESSIBLE ROUTE TO CONTROL DEVICE'); return; }
+      note('RESEARCHER MOVING TO ' + (targetObject.type === 'MOD0005' ? 'BRIDGE CONSOLE' : 'CONTROL PANEL'));
+      walk(path, () => {
+        note('CONTROL DEVICE REACHED');
+        onDeviceInteract?.(targetObject, targetDeck);
+        refresh();
+      });
+      return;
+    }
     if (targetDeck !== (s.pawn.deck ?? 'Z0')) {
       if (isDeckLocked(s, s.pawn.deck ?? 'Z0') || isDeckLocked(s, targetDeck)) { note('ACCESS SHAFT LOCKED'); return; }
       const path = findDeckPath(s, p, targetDeck);
