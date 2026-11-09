@@ -1,7 +1,6 @@
 import { getBuildable, getActiveDeckObjects } from '../systems/prefab-manager.js';
 import { applyDamageAt } from '../systems/damage-system.js';
-import { isBlocked, isDeckLocked } from '../systems/navigation.js';
-import { syncAccessShaftPressureLocks } from '../systems/access-shaft-system.js';
+import { isBlocked } from '../systems/navigation.js';
 import { bindCameraControls } from './camera-controls.js';
 import { createCommandExecutor } from './command-execution.js';
 import { createConstructionInput } from './construction-input.js';
@@ -32,7 +31,7 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
     );
   }
   const place = createConstructionInput(s, inside, objectAt, refresh, note);
-  const executeCommand = createCommandExecutor(s, refresh, note, objectAt, controller.signal);
+  const executeCommand = createCommandExecutor(s, refresh, note, objectAt, controller.signal, onControlPanelClick);
   const shaftMenu = document.querySelector('#shaft-menu');
   const onShaft = (p) =>
     s.accessShaft?.cells?.some((cell) => cell.x === p.x && cell.y === p.y);
@@ -79,41 +78,19 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
   const closeShaftMenu = () => { if (shaftMenu) shaftMenu.hidden = true; };
   function showShaftMenu(event) {
     if (!shaftMenu || !s.devMode || !s.accessShaft) return;
-    syncAccessShaftPressureLocks(s);
-    const deckLock = s.accessShaft.decks?.[s.activeDeck] ?? {};
-    const autoLocked = Boolean(deckLock.autoLock);
-    const locked = isDeckLocked(s, s.activeDeck);
-    shaftMenu.innerHTML =
-      '<button type="button" data-shaft-action="lock"' + (autoLocked ? ' disabled' : '') + '>' +
-      (autoLocked ? 'LOCKED · PRESSURE SAFETY' : locked ? 'UNLOCK ' + s.activeDeck : 'LOCK ' + s.activeDeck) + '</button>' +
-      (deckLock.lockReason ? '<div class="shaft-lock-reason">' + deckLock.lockReason + '</div>' : '') +
-      (s.pawn.selected
-        ? '<button type="button" data-shaft-action="go">GO TO <span>›</span></button>' +
-          '<div class="shaft-deck-options" hidden>' +
-          ['Z+2','Z+1','Z0','Z-1','Z-2'].filter((deck) => deck !== (s.pawn.deck ?? 'Z0'))
-            .map((deck) => '<button type="button" data-shaft-deck="' + deck + '">' + deck + '</button>').join('') +
-          '</div>'
-        : '');
+    shaftMenu.innerHTML = s.pawn.selected
+      ? '<button type="button" data-shaft-action="go">GO TO <span>›</span></button>' +
+        '<div class="shaft-deck-options" hidden>' +
+        ['Z+2','Z+1','Z0','Z-1','Z-2'].filter((deck) => deck !== (s.pawn.deck ?? 'Z0'))
+          .map((deck) => '<button type="button" data-shaft-deck="' + deck + '">' + deck + '</button>').join('') +
+        '</div>'
+      : '<div class="shaft-lock-reason">SELECT THE RESEARCHER FIRST</div>';
     shaftMenu.style.left = Math.min(event.clientX, window.innerWidth - 190) + 'px';
     shaftMenu.style.top = Math.min(event.clientY, window.innerHeight - 150) + 'px';
     shaftMenu.hidden = false;
   }
   if (shaftMenu) listen(shaftMenu, 'click', (event) => {
     const action = event.target.closest('[data-shaft-action]')?.dataset.shaftAction;
-    if (action === 'lock') {
-      const deck = s.activeDeck;
-      const access = s.accessShaft.decks?.[deck];
-      if (access?.autoLock) note('ACCESS SHAFT LOCKED · PRESSURE SAFETY');
-      else if (access) {
-        access.manualLock = !access.manualLock;
-        syncAccessShaftPressureLocks(s);
-        note(access.manualLock ? 'ACCESS LOCKED · ' + deck : 'ACCESS UNLOCKED · ' + deck);
-      } else {
-        s.accessShaft.locked = !s.accessShaft.locked;
-        note(s.accessShaft.locked ? 'ACCESS SHAFT LOCKED' : 'ACCESS SHAFT UNLOCKED');
-      }
-      closeShaftMenu(); refresh(); return;
-    }
     if (action === 'go') {
       if (!s.pawn.selected) return;
       const list = shaftMenu.querySelector('.shaft-deck-options');
@@ -185,7 +162,6 @@ export function bindInput(canvas, s, r, refresh, cancel, note, onControlPanelCli
       if (obj) {
         s.selectedObject = obj.id;
         s.pawn.selected = false;
-        if (s.activeDeck === 'Z0' && obj.type === 'MOD0014' && obj.built !== false) onControlPanelClick?.(obj);
         refresh();
         return;
       }
