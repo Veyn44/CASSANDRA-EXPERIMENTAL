@@ -1,3 +1,4 @@
+import { getPawnCondition, getRestState } from '../systems/pawn-action-system.js';
 import { updateSidebar } from './sidebar.js';
 import { connectedHullCount, shipHullTileCount } from '../systems/hull-system.js';
 import { getBuildable } from '../systems/prefab-manager.js';
@@ -25,6 +26,9 @@ export function renderHud(state, renderer, sectionsPanel, gridBtn) {
   $('#ship-hull-count').textContent = shipHullTileCount(state) + ' tiles';
   sectionsPanel?.refresh();
   $('#pawn-ap').textContent = state.pawn.op + ' / ' + state.pawn.maxOP;
+  $('#pawn-condition').textContent = getPawnCondition(state.pawn);
+  $('#pawn-rest').textContent = state.pawn.rest + ' / 15 · ' + getRestState(state.pawn).label;
+  $('#pawn-sleep-state').textContent = state.pawn.sleepState === 'SLEEPING' ? 'SLEEPING' : 'AWAKE';
   $('#pawn-position').textContent = state.pawn.x + ', ' + state.pawn.y;
   $('#mode-label').textContent = state.activeTool
     ? state.activeTool === 'prefab'
