@@ -27,7 +27,9 @@ export function startGameSession(mode, { $, canvas, refresh, noteText }) {
       refresh();
     },
     noteText,
-    (device, deckId) => sectionsPanel?.openFromDevice(device, deckId)
+    (device, deckId) => device.type === 'MOD0006'
+      ? sectionsPanel?.openFromModule(device)
+      : sectionsPanel?.openFromDevice(device, deckId)
   );
 
   const devPanel = dev ? bindDevPanel(state, refresh, noteText) : null;
