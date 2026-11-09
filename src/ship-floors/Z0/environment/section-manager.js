@@ -539,23 +539,53 @@ export function completeSectionScan(s, section) {
       const tile = s.map.tiles[key(p.x, p.y)];
       return { type: 'HULL FLOOR', targetKind: 'FLOOR', x: p.x, y: p.y, integrity: tile.integrity ?? 100 };
     }),
-    walls = new Map();
-  for (const p of section.tiles)
+    walls = new Map(),
+    sectionData = detectSections(s, { useSnapshot: false }),
+    maxScanDistance = Math.max(s.map.width, s.map.height);
+
+  // Scan outward from this section through consecutive structural layers.
+  // Stop at the first tile belonging to another environment section.
+  for (const p of section.tiles) {
     for (const [dx, dy] of SCAN_DIRS) {
-      const x = p.x + dx,
-        y = p.y + dy,
-        tile = s.map.tiles[key(x, y)];
-      if (!tile || (!tile.wall && !tile.aluminiumWall)) continue;
-      const k = key(x, y);
-      if (!walls.has(k))
-        walls.set(k, {
-          type: tile.aluminiumWall ? 'ALUMINIUM WALL' : 'TITANIUM WALL',
-          targetKind: tile.aluminiumWall ? 'ALUMINIUM_WALL' : 'HULL_WALL',
-          x,
-          y,
-          integrity: wallIntegrity(tile),
-        });
+      for (let distance = 1; distance <= maxScanDistance; distance++) {
+        const x = p.x + dx * distance;
+        const y = p.y + dy * distance;
+        if (x < 0 || y < 0 || x >= s.map.width || y >= s.map.height) break;
+        const position = key(x, y);
+        const otherSection = sectionData.tileToSection[position];
+        if (otherSection && otherSection !== section.id) break;
+
+        const tile = s.map.tiles[position];
+        const door = doorAt(s, x, y);
+        if (isWall(tile)) {
+          if (!walls.has(position))
+            walls.set(position, {
+              type: tile.aluminiumWall ? 'ALUMINIUM WALL' : 'TITANIUM WALL',
+              targetKind: tile.aluminiumWall ? 'ALUMINIUM_WALL' : 'HULL_WALL',
+              x,
+              y,
+              integrity: wallIntegrity(tile),
+            });
+          continue;
+        }
+        if (door) {
+          const doorKey = 'DOOR:' + door.id;
+          if (!walls.has(doorKey))
+            walls.set(doorKey, {
+              type: door.type === 'STR0002' || door.type === 'STR0003' ? 'TITANIUM DOOR' : 'ALUMINIUM DOOR',
+              targetKind: 'DOOR',
+              targetId: door.id,
+              x: door.x,
+              y: door.y,
+              integrity: doorIntegrity(door),
+            });
+          continue;
+        }
+        // Do not reveal unrelated structures beyond an open gap or empty space.
+        break;
+      }
     }
+  }
   for (const object of Object.values(s.map.objects))
     if (
       DOOR_TYPES.has(object.type) &&
