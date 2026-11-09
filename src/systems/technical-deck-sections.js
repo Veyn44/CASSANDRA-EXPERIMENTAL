@@ -69,8 +69,7 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
   if (shaftPoint) {
     const shaftAccess = state.accessShaft?.decks ?? {};
     const shaftClosed = Boolean(
-      shaftAccess.Z0?.manualLock || shaftAccess.Z0?.autoLock ||
-      shaftAccess[deckId]?.manualLock || shaftAccess[deckId]?.autoLock
+      shaftAccess.Z0?.autoLock || shaftAccess[deckId]?.autoLock
     );
     const z0Data = detectSections(state);
     const z0SectionId = z0Data.tileToSection[key(shaftPoint.x, shaftPoint.y)];
@@ -86,7 +85,15 @@ export function detectTechnicalDeckSections(state, deckId = state.activeDeck) {
         sectionId: z0Section?.id ?? null,
         shaftOpen: !shaftClosed,
       };
-      if (shaftClosed) {
+      const ventOverride = state.technicalDeckEnvironmentOverrides?.[deckId]?.[section.id];
+      if (ventOverride && ventOverride.turn === state.turn) {
+        section.airtightness = section.airtightness ?? 'STABLE';
+        section.environment = 'VACUUM';
+        section.atmosphere = 'NONE';
+        section.pressure = 'VACUUM';
+        section.temperature = -270;
+        section.vented = true;
+      } else if (shaftClosed) {
         section.airtightness = 'SEALED';
         section.environment = 'ISOLATED';
         section.atmosphere = 'ISOLATED';
