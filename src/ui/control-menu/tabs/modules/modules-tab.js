@@ -1,5 +1,5 @@
-import { getModuleRuntime } from '../../../modules/module-registry.js';
-import { trySpendActionAP, getRestState } from '../../../systems/pawn-action-system.js';
+import { getModuleRuntime } from '../../../../modules/module-registry.js';
+import { trySpendActionAP, getRestState } from '../../../../systems/pawn-action-system.js';
 
 export function createModulesTab(root, state, onChange) {
   let activeModule = null;
