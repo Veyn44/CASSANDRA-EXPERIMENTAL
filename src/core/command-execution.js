@@ -50,7 +50,7 @@ export function createCommandExecutor(s, refresh, note, objectAt, signal, onDevi
     if (!inside(p) || s.pawn.moving) return;
     syncAccessShaftPressureLocks(s);
     if (!s.pawn.selected) { note('SELECT THE RESEARCHER FIRST'); return; }
-    const targetObject = objectAt(p);
+    const targetObject = objectAt(p, targetDeck);
     if (targetObject && targetObject.built !== false
       && (targetObject.type === 'MOD0014' || targetObject.type === 'MOD0005')) {
       const path = deviceInteractionPath(targetObject, targetDeck);
